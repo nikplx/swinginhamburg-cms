@@ -1,7 +1,7 @@
 services:
   postgres:
     container_name: postgresdb
-    image: postgres
+    image: ghcr.io/payloadcms/postgis-vector:latest
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}

@@ -2,10 +2,8 @@
 -- PostgreSQL database dump
 --
 
-\restrict DpdwNaFw2xX2tOmsIw7KpSvEBOKtyAKOIOZIdbojHVjeowIFWpL5JieFAxZcXDF
-
--- Dumped from database version 18.3 (Debian 18.3-1.pgdg13+1)
--- Dumped by pg_dump version 18.3 (Debian 18.3-1.pgdg13+1)
+-- Dumped from database version 17.5 (Debian 17.5-1.pgdg120+1)
+-- Dumped by pg_dump version 17.5 (Debian 17.5-1.pgdg120+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -156,6 +154,36 @@ DROP TABLE IF EXISTS public.classes;
 DROP TYPE IF EXISTS public.enum_users_roles;
 DROP TYPE IF EXISTS public.enum_classes_weekday;
 DROP TYPE IF EXISTS public._locales;
+DROP EXTENSION IF EXISTS vector;
+DROP EXTENSION IF EXISTS postgis;
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
+
+
+--
+-- Name: vector; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
+
+
 --
 -- Name: _locales; Type: TYPE; Schema: public; Owner: postgres
 --
@@ -213,7 +241,9 @@ CREATE TABLE public.classes (
     cancelled character varying,
     school_id integer,
     updated_at timestamp(3) with time zone DEFAULT now() NOT NULL,
-    created_at timestamp(3) with time zone DEFAULT now() NOT NULL
+    created_at timestamp(3) with time zone DEFAULT now() NOT NULL,
+    address character varying DEFAULT 'Hamburg'::character varying NOT NULL,
+    location public.geometry(Point) DEFAULT '0101000020E61000006C3F19E3C3FC234048A46DFC89C64A40'::public.geometry NOT NULL
 );
 
 
@@ -992,11 +1022,11 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: classes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.classes (id, title, cancelled, school_id, updated_at, created_at) FROM stdin;
-4	Solo Jazz	\N	2	2026-03-24 18:02:34.004+00	2026-03-24 17:35:05.596+00
-3	Improver	\N	1	2026-03-24 18:02:58.754+00	2026-03-24 17:16:48.907+00
-2	Intermediate	\N	1	2026-03-24 18:06:17.473+00	2026-03-24 17:16:26.976+00
-1	Beginner 1	\N	1	2026-03-24 18:06:23.889+00	2026-03-24 17:16:07.892+00
+COPY public.classes (id, title, cancelled, school_id, updated_at, created_at, address, location) FROM stdin;
+4	Solo Jazz	\N	2	2026-03-24 21:25:52.277+00	2026-03-24 17:35:05.596+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
+3	Improver	\N	1	2026-03-24 21:26:31.034+00	2026-03-24 17:16:48.907+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
+2	Intermediate	\N	1	2026-03-24 21:26:41.161+00	2026-03-24 17:16:26.976+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
+1	Beginner 1	\N	1	2026-03-24 21:26:52.811+00	2026-03-24 17:16:07.892+00	Cotton Club, 10, Alter Steinweg, Portugiesenviertel, Neustadt, Hamburg-Mitte, Hamburg, 20459, Germany	0101000020E6100000A682E563D2F6234082ECAB6175C64A40
 \.
 
 
@@ -1005,14 +1035,14 @@ COPY public.classes (id, title, cancelled, school_id, updated_at, created_at) FR
 --
 
 COPY public.classes_locales (description, weekday, id, _locale, _parent_id) FROM stdin;
-Classic Routines	Wednesday	2	en	4
-Classic Routines	Wednesday	3	de	4
-Lindy Hop	Monday	5	en	3
-Lindy Hop	Monday	6	de	3
-Lindy Hop	Monday	9	en	2
-Lindy hop	Monday	10	de	2
-Lindy Hop	Monday	11	en	1
-Lindy Hop	Monday	12	de	1
+Classic Routines	Wednesday	13	en	4
+Classic Routines	Wednesday	14	de	4
+Lindy Hop	Monday	15	en	3
+Lindy Hop	Monday	16	de	3
+Lindy Hop	Monday	17	en	2
+Lindy hop	Monday	18	de	2
+Lindy Hop	Monday	19	en	1
+Lindy Hop	Monday	20	de	1
 \.
 
 
@@ -1021,13 +1051,13 @@ Lindy Hop	Monday	12	de	1
 --
 
 COPY public.classes_rels (id, "order", parent_id, path, teachers_id) FROM stdin;
-9	1	4	teachers	2
-13	1	3	teachers	3
-14	2	3	teachers	1
-15	3	3	teachers	2
-19	1	2	teachers	4
-20	2	2	teachers	5
-21	1	1	teachers	3
+22	1	4	teachers	2
+23	1	3	teachers	3
+24	2	3	teachers	1
+25	3	3	teachers	2
+26	1	2	teachers	4
+27	2	2	teachers	5
+28	1	1	teachers	3
 \.
 
 
@@ -1072,7 +1102,6 @@ COPY public.payload_kv (id, key, data) FROM stdin;
 
 COPY public.payload_locked_documents (id, global_slug, updated_at, created_at) FROM stdin;
 10	\N	2026-03-24 16:57:59.046+00	2026-03-24 16:56:35.329+00
-21	\N	2026-03-24 18:05:04.755+00	2026-03-24 18:05:04.754+00
 \.
 
 
@@ -1083,8 +1112,6 @@ COPY public.payload_locked_documents (id, global_slug, updated_at, created_at) F
 COPY public.payload_locked_documents_rels (id, "order", parent_id, path, users_id, media_id, classes_id, schools_id, teachers_id) FROM stdin;
 10	\N	10	document	1	\N	\N	\N	\N
 11	\N	10	user	1	\N	\N	\N	\N
-26	\N	21	document	\N	\N	3	\N	\N
-27	\N	21	user	1	\N	\N	\N	\N
 \.
 
 
@@ -1093,7 +1120,7 @@ COPY public.payload_locked_documents_rels (id, "order", parent_id, path, users_i
 --
 
 COPY public.payload_migrations (id, name, batch, updated_at, created_at) FROM stdin;
-1	dev	-1	2026-03-24 18:00:50.545+00	2026-03-24 15:10:59.203+00
+1	dev	-1	2026-03-24 21:21:16.372+00	2026-03-24 15:10:59.203+00
 \.
 
 
@@ -1155,6 +1182,14 @@ COPY public.schools_rels (id, "order", parent_id, path, teachers_id) FROM stdin;
 
 
 --
+-- Data for Name: spatial_ref_sys; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.spatial_ref_sys (srid, auth_name, auth_srid, srtext, proj4text) FROM stdin;
+\.
+
+
+--
 -- Data for Name: teachers; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1181,7 +1216,7 @@ COPY public.users (id, updated_at, created_at, enable_a_p_i_key, api_key, api_ke
 --
 
 COPY public.users_sessions (_order, _parent_id, id, created_at, expires_at) FROM stdin;
-1	1	1f651e77-c454-4111-bfa0-0e1b80fec35d	2026-03-24 15:11:18.793+00	2026-03-24 19:10:41.669+00
+1	1	4e5d67b4-e2c2-49a6-a892-fda150fee972	2026-03-24 21:21:30.468+00	2026-03-24 23:21:30.468+00
 \.
 
 
@@ -1196,14 +1231,14 @@ SELECT pg_catalog.setval('public.classes_id_seq', 4, true);
 -- Name: classes_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.classes_locales_id_seq', 12, true);
+SELECT pg_catalog.setval('public.classes_locales_id_seq', 20, true);
 
 
 --
 -- Name: classes_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.classes_rels_id_seq', 21, true);
+SELECT pg_catalog.setval('public.classes_rels_id_seq', 28, true);
 
 
 --
@@ -1238,14 +1273,14 @@ SELECT pg_catalog.setval('public.payload_kv_id_seq', 1, false);
 -- Name: payload_locked_documents_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_locked_documents_id_seq', 25, true);
+SELECT pg_catalog.setval('public.payload_locked_documents_id_seq', 29, true);
 
 
 --
 -- Name: payload_locked_documents_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_locked_documents_rels_id_seq', 35, true);
+SELECT pg_catalog.setval('public.payload_locked_documents_rels_id_seq', 43, true);
 
 
 --
@@ -1916,6 +1951,4 @@ ALTER TABLE ONLY public.users_sessions
 --
 -- PostgreSQL database dump complete
 --
-
-\unrestrict DpdwNaFw2xX2tOmsIw7KpSvEBOKtyAKOIOZIdbojHVjeowIFWpL5JieFAxZcXDF
 

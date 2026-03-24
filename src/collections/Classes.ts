@@ -18,20 +18,12 @@ export const Classes: CollectionConfig = {
       name: 'description',
       type: 'text',
       required: true,
-      localized: true
+      localized: true,
     },
     {
       name: 'weekday',
       type: 'select',
-      options: [
-        'Monday', 
-        'Tuesday', 
-        'Wednesday', 
-        'Thursday', 
-        'Friday', 
-        'Saturday', 
-        'Sunday'
-      ],
+      options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       required: true,
       localized: true,
     },
@@ -43,15 +35,33 @@ export const Classes: CollectionConfig = {
     {
       name: 'school',
       type: 'relationship',
-      relationTo: 'schools'
+      relationTo: 'schools',
     },
     {
       name: 'teachers',
       type: 'relationship',
       relationTo: 'teachers',
-      hasMany: true
+      hasMany: true,
+    },
+    {
+      name: 'address',
+      type: 'text',
+      required: true,
+      defaultValue: "Hamburg",
+      // Optional: Set to true if you want to hide this field and only let the custom component manage it
+      // admin: { hidden: true } 
+    },
+    {
+      name: 'location',
+      type: 'point',
+      required: true,
+      // Corrected to [Longitude, Latitude] for Hamburg
+      defaultValue: [9.993682, 53.551086], 
+      admin: {
+        components: {
+          Field: '@/components/LocationSearchField', 
+        }
+      }
     }
-    // Email added by default
-    // Add more fields as needed
   ],
 }

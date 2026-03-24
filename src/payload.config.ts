@@ -12,6 +12,7 @@ import { Classes } from './collections/Classes'
 import { Schools } from './collections/Schools'
 import { Teachers } from './collections/Teachers'
 import { Index } from './globals'
+import { integer, pgTable, varchar } from '@payloadcms/db-postgres/drizzle/pg-core'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -52,4 +53,5 @@ export default buildConfig({
   }),
   sharp,
   plugins: [],
+
 })

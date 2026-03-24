@@ -187,6 +187,12 @@ export interface Class {
   cancelled?: string | null;
   school?: (number | null) | School;
   teachers?: (number | Teacher)[] | null;
+  address: string;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  location: [number, number];
   updatedAt: string;
   createdAt: string;
 }
@@ -384,6 +390,8 @@ export interface ClassesSelect<T extends boolean = true> {
   cancelled?: T;
   school?: T;
   teachers?: T;
+  address?: T;
+  location?: T;
   updatedAt?: T;
   createdAt?: T;
 }
