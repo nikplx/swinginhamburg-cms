@@ -18,12 +18,14 @@ export const Classes: CollectionConfig = {
       name: 'description',
       type: 'text',
       required: true,
+      localized: true
     },
     {
       name: 'weekday',
       type: 'select',
       options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       required: true,
+      localized: true,
     },
     {
       name: 'cancelled',

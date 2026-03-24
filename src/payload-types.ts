@@ -129,6 +129,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  roles: 'admin' | 'writer' | 'school' | 'guest';
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -207,6 +208,7 @@ export interface School {
     };
     [k: string]: unknown;
   } | null;
+  website?: string | null;
   teachers?: (number | Teacher)[] | null;
   updatedAt: string;
   createdAt: string;
@@ -328,6 +330,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  roles?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
@@ -387,6 +390,7 @@ export interface ClassesSelect<T extends boolean = true> {
 export interface SchoolsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
+  website?: T;
   teachers?: T;
   updatedAt?: T;
   createdAt?: T;

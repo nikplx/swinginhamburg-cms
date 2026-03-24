@@ -17,6 +17,11 @@ export const Schools: CollectionConfig = {
     {
       name: 'description',
       type: 'richText',
+      localized: true
+    },
+    {
+      name: 'website',
+      type: 'text'
     },
     {
         name: 'teachers',
