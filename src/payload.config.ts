@@ -11,6 +11,7 @@ import { Media } from './collections/Media'
 import { Classes } from './collections/Classes'
 import { Schools } from './collections/Schools'
 import { Teachers } from './collections/Teachers'
+import { Index } from './globals'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -35,6 +36,7 @@ export default buildConfig({
     ],
     defaultLocale: 'en'
   },
+  globals: [Index],
   collections: [Users, Media, Classes, Schools, Teachers],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

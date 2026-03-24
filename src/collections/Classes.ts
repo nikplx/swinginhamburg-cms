@@ -23,7 +23,15 @@ export const Classes: CollectionConfig = {
     {
       name: 'weekday',
       type: 'select',
-      options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      options: [
+        'Monday', 
+        'Tuesday', 
+        'Wednesday', 
+        'Thursday', 
+        'Friday', 
+        'Saturday', 
+        'Sunday'
+      ],
       required: true,
       localized: true,
     },
