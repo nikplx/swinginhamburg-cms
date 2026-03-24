@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict DeFcyQMQKZTH9BubbvgX7vXjC5Gwf1kC33EqMuxDh6z8eM1Te7aHbIah2mthMd4
+\restrict DpdwNaFw2xX2tOmsIw7KpSvEBOKtyAKOIOZIdbojHVjeowIFWpL5JieFAxZcXDF
 
 -- Dumped from database version 18.3 (Debian 18.3-1.pgdg13+1)
 -- Dumped by pg_dump version 18.3 (Debian 18.3-1.pgdg13+1)
@@ -22,6 +22,7 @@ SET row_security = off;
 ALTER TABLE IF EXISTS ONLY public.users_sessions DROP CONSTRAINT IF EXISTS users_sessions_parent_id_fk;
 ALTER TABLE IF EXISTS ONLY public.schools_rels DROP CONSTRAINT IF EXISTS schools_rels_teachers_fk;
 ALTER TABLE IF EXISTS ONLY public.schools_rels DROP CONSTRAINT IF EXISTS schools_rels_parent_fk;
+ALTER TABLE IF EXISTS ONLY public.schools_locales DROP CONSTRAINT IF EXISTS schools_locales_parent_id_fk;
 ALTER TABLE IF EXISTS ONLY public.payload_preferences_rels DROP CONSTRAINT IF EXISTS payload_preferences_rels_users_fk;
 ALTER TABLE IF EXISTS ONLY public.payload_preferences_rels DROP CONSTRAINT IF EXISTS payload_preferences_rels_parent_fk;
 ALTER TABLE IF EXISTS ONLY public.payload_locked_documents_rels DROP CONSTRAINT IF EXISTS payload_locked_documents_rels_users_fk;
@@ -34,6 +35,7 @@ ALTER TABLE IF EXISTS ONLY public.index_locales DROP CONSTRAINT IF EXISTS index_
 ALTER TABLE IF EXISTS ONLY public.classes DROP CONSTRAINT IF EXISTS classes_school_id_schools_id_fk;
 ALTER TABLE IF EXISTS ONLY public.classes_rels DROP CONSTRAINT IF EXISTS classes_rels_teachers_fk;
 ALTER TABLE IF EXISTS ONLY public.classes_rels DROP CONSTRAINT IF EXISTS classes_rels_parent_fk;
+ALTER TABLE IF EXISTS ONLY public.classes_locales DROP CONSTRAINT IF EXISTS classes_locales_parent_id_fk;
 DROP INDEX IF EXISTS public.users_updated_at_idx;
 DROP INDEX IF EXISTS public.users_sessions_parent_id_idx;
 DROP INDEX IF EXISTS public.users_sessions_order_idx;
@@ -46,6 +48,7 @@ DROP INDEX IF EXISTS public.schools_rels_teachers_id_idx;
 DROP INDEX IF EXISTS public.schools_rels_path_idx;
 DROP INDEX IF EXISTS public.schools_rels_parent_idx;
 DROP INDEX IF EXISTS public.schools_rels_order_idx;
+DROP INDEX IF EXISTS public.schools_locales_locale_parent_id_unique;
 DROP INDEX IF EXISTS public.schools_created_at_idx;
 DROP INDEX IF EXISTS public.payload_preferences_updated_at_idx;
 DROP INDEX IF EXISTS public.payload_preferences_rels_users_id_idx;
@@ -78,12 +81,14 @@ DROP INDEX IF EXISTS public.classes_rels_teachers_id_idx;
 DROP INDEX IF EXISTS public.classes_rels_path_idx;
 DROP INDEX IF EXISTS public.classes_rels_parent_idx;
 DROP INDEX IF EXISTS public.classes_rels_order_idx;
+DROP INDEX IF EXISTS public.classes_locales_locale_parent_id_unique;
 DROP INDEX IF EXISTS public.classes_created_at_idx;
 ALTER TABLE IF EXISTS ONLY public.users_sessions DROP CONSTRAINT IF EXISTS users_sessions_pkey;
 ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_pkey;
 ALTER TABLE IF EXISTS ONLY public.teachers DROP CONSTRAINT IF EXISTS teachers_pkey;
 ALTER TABLE IF EXISTS ONLY public.schools_rels DROP CONSTRAINT IF EXISTS schools_rels_pkey;
 ALTER TABLE IF EXISTS ONLY public.schools DROP CONSTRAINT IF EXISTS schools_pkey;
+ALTER TABLE IF EXISTS ONLY public.schools_locales DROP CONSTRAINT IF EXISTS schools_locales_pkey;
 ALTER TABLE IF EXISTS ONLY public.payload_preferences_rels DROP CONSTRAINT IF EXISTS payload_preferences_rels_pkey;
 ALTER TABLE IF EXISTS ONLY public.payload_preferences DROP CONSTRAINT IF EXISTS payload_preferences_pkey;
 ALTER TABLE IF EXISTS ONLY public.payload_migrations DROP CONSTRAINT IF EXISTS payload_migrations_pkey;
@@ -95,9 +100,11 @@ ALTER TABLE IF EXISTS ONLY public.index DROP CONSTRAINT IF EXISTS index_pkey;
 ALTER TABLE IF EXISTS ONLY public.index_locales DROP CONSTRAINT IF EXISTS index_locales_pkey;
 ALTER TABLE IF EXISTS ONLY public.classes_rels DROP CONSTRAINT IF EXISTS classes_rels_pkey;
 ALTER TABLE IF EXISTS ONLY public.classes DROP CONSTRAINT IF EXISTS classes_pkey;
+ALTER TABLE IF EXISTS ONLY public.classes_locales DROP CONSTRAINT IF EXISTS classes_locales_pkey;
 ALTER TABLE IF EXISTS public.users ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.teachers ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.schools_rels ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.schools_locales ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.schools ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.payload_preferences_rels ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.payload_preferences ALTER COLUMN id DROP DEFAULT;
@@ -109,6 +116,7 @@ ALTER TABLE IF EXISTS public.media ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.index_locales ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.index ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.classes_rels ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.classes_locales ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.classes ALTER COLUMN id DROP DEFAULT;
 DROP TABLE IF EXISTS public.users_sessions;
 DROP SEQUENCE IF EXISTS public.users_id_seq;
@@ -117,6 +125,8 @@ DROP SEQUENCE IF EXISTS public.teachers_id_seq;
 DROP TABLE IF EXISTS public.teachers;
 DROP SEQUENCE IF EXISTS public.schools_rels_id_seq;
 DROP TABLE IF EXISTS public.schools_rels;
+DROP SEQUENCE IF EXISTS public.schools_locales_id_seq;
+DROP TABLE IF EXISTS public.schools_locales;
 DROP SEQUENCE IF EXISTS public.schools_id_seq;
 DROP TABLE IF EXISTS public.schools;
 DROP SEQUENCE IF EXISTS public.payload_preferences_rels_id_seq;
@@ -139,8 +149,11 @@ DROP SEQUENCE IF EXISTS public.index_id_seq;
 DROP TABLE IF EXISTS public.index;
 DROP SEQUENCE IF EXISTS public.classes_rels_id_seq;
 DROP TABLE IF EXISTS public.classes_rels;
+DROP SEQUENCE IF EXISTS public.classes_locales_id_seq;
+DROP TABLE IF EXISTS public.classes_locales;
 DROP SEQUENCE IF EXISTS public.classes_id_seq;
 DROP TABLE IF EXISTS public.classes;
+DROP TYPE IF EXISTS public.enum_users_roles;
 DROP TYPE IF EXISTS public.enum_classes_weekday;
 DROP TYPE IF EXISTS public._locales;
 --
@@ -172,6 +185,20 @@ CREATE TYPE public.enum_classes_weekday AS ENUM (
 
 ALTER TYPE public.enum_classes_weekday OWNER TO postgres;
 
+--
+-- Name: enum_users_roles; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.enum_users_roles AS ENUM (
+    'admin',
+    'writer',
+    'school',
+    'guest'
+);
+
+
+ALTER TYPE public.enum_users_roles OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -183,8 +210,6 @@ SET default_table_access_method = heap;
 CREATE TABLE public.classes (
     id integer NOT NULL,
     title character varying NOT NULL,
-    description character varying NOT NULL,
-    weekday public.enum_classes_weekday NOT NULL,
     cancelled character varying,
     school_id integer,
     updated_at timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -214,6 +239,43 @@ ALTER SEQUENCE public.classes_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.classes_id_seq OWNED BY public.classes.id;
+
+
+--
+-- Name: classes_locales; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.classes_locales (
+    description character varying NOT NULL,
+    weekday public.enum_classes_weekday NOT NULL,
+    id integer NOT NULL,
+    _locale public._locales NOT NULL,
+    _parent_id integer NOT NULL
+);
+
+
+ALTER TABLE public.classes_locales OWNER TO postgres;
+
+--
+-- Name: classes_locales_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.classes_locales_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.classes_locales_id_seq OWNER TO postgres;
+
+--
+-- Name: classes_locales_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.classes_locales_id_seq OWNED BY public.classes_locales.id;
 
 
 --
@@ -605,9 +667,9 @@ ALTER SEQUENCE public.payload_preferences_rels_id_seq OWNED BY public.payload_pr
 CREATE TABLE public.schools (
     id integer NOT NULL,
     name character varying NOT NULL,
-    description jsonb,
     updated_at timestamp(3) with time zone DEFAULT now() NOT NULL,
-    created_at timestamp(3) with time zone DEFAULT now() NOT NULL
+    created_at timestamp(3) with time zone DEFAULT now() NOT NULL,
+    website character varying
 );
 
 
@@ -633,6 +695,42 @@ ALTER SEQUENCE public.schools_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.schools_id_seq OWNED BY public.schools.id;
+
+
+--
+-- Name: schools_locales; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.schools_locales (
+    description jsonb,
+    id integer NOT NULL,
+    _locale public._locales NOT NULL,
+    _parent_id integer NOT NULL
+);
+
+
+ALTER TABLE public.schools_locales OWNER TO postgres;
+
+--
+-- Name: schools_locales_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.schools_locales_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.schools_locales_id_seq OWNER TO postgres;
+
+--
+-- Name: schools_locales_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.schools_locales_id_seq OWNED BY public.schools_locales.id;
 
 
 --
@@ -727,7 +825,8 @@ CREATE TABLE public.users (
     salt character varying,
     hash character varying,
     login_attempts numeric DEFAULT 0,
-    lock_until timestamp(3) with time zone
+    lock_until timestamp(3) with time zone,
+    roles public.enum_users_roles DEFAULT 'guest'::public.enum_users_roles NOT NULL
 );
 
 
@@ -775,6 +874,13 @@ ALTER TABLE public.users_sessions OWNER TO postgres;
 --
 
 ALTER TABLE ONLY public.classes ALTER COLUMN id SET DEFAULT nextval('public.classes_id_seq'::regclass);
+
+
+--
+-- Name: classes_locales id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.classes_locales ALTER COLUMN id SET DEFAULT nextval('public.classes_locales_id_seq'::regclass);
 
 
 --
@@ -855,6 +961,13 @@ ALTER TABLE ONLY public.schools ALTER COLUMN id SET DEFAULT nextval('public.scho
 
 
 --
+-- Name: schools_locales id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.schools_locales ALTER COLUMN id SET DEFAULT nextval('public.schools_locales_id_seq'::regclass);
+
+
+--
 -- Name: schools_rels id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -879,11 +992,27 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: classes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.classes (id, title, description, weekday, cancelled, school_id, updated_at, created_at) FROM stdin;
-1	Beginner 1	Lindy Hop	Monday	\N	1	2026-03-24 17:16:07.892+00	2026-03-24 17:16:07.892+00
-2	Intermediate	Lindy Hop	Monday	\N	1	2026-03-24 17:16:26.976+00	2026-03-24 17:16:26.976+00
-3	Improver	Lindy Hop	Friday	\N	1	2026-03-24 17:16:48.907+00	2026-03-24 17:16:48.907+00
-4	Solo Jazz	Classic Routines	Wednesday	\N	2	2026-03-24 17:35:05.596+00	2026-03-24 17:35:05.596+00
+COPY public.classes (id, title, cancelled, school_id, updated_at, created_at) FROM stdin;
+4	Solo Jazz	\N	2	2026-03-24 18:02:34.004+00	2026-03-24 17:35:05.596+00
+3	Improver	\N	1	2026-03-24 18:02:58.754+00	2026-03-24 17:16:48.907+00
+2	Intermediate	\N	1	2026-03-24 18:06:17.473+00	2026-03-24 17:16:26.976+00
+1	Beginner 1	\N	1	2026-03-24 18:06:23.889+00	2026-03-24 17:16:07.892+00
+\.
+
+
+--
+-- Data for Name: classes_locales; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.classes_locales (description, weekday, id, _locale, _parent_id) FROM stdin;
+Classic Routines	Wednesday	2	en	4
+Classic Routines	Wednesday	3	de	4
+Lindy Hop	Monday	5	en	3
+Lindy Hop	Monday	6	de	3
+Lindy Hop	Monday	9	en	2
+Lindy hop	Monday	10	de	2
+Lindy Hop	Monday	11	en	1
+Lindy Hop	Monday	12	de	1
 \.
 
 
@@ -892,13 +1021,13 @@ COPY public.classes (id, title, description, weekday, cancelled, school_id, upda
 --
 
 COPY public.classes_rels (id, "order", parent_id, path, teachers_id) FROM stdin;
-1	1	1	teachers	3
-2	1	2	teachers	4
-3	2	2	teachers	5
-4	1	3	teachers	3
-5	2	3	teachers	1
-6	3	3	teachers	2
-7	1	4	teachers	2
+9	1	4	teachers	2
+13	1	3	teachers	3
+14	2	3	teachers	1
+15	3	3	teachers	2
+19	1	2	teachers	4
+20	2	2	teachers	5
+21	1	1	teachers	3
 \.
 
 
@@ -943,6 +1072,7 @@ COPY public.payload_kv (id, key, data) FROM stdin;
 
 COPY public.payload_locked_documents (id, global_slug, updated_at, created_at) FROM stdin;
 10	\N	2026-03-24 16:57:59.046+00	2026-03-24 16:56:35.329+00
+21	\N	2026-03-24 18:05:04.755+00	2026-03-24 18:05:04.754+00
 \.
 
 
@@ -953,6 +1083,8 @@ COPY public.payload_locked_documents (id, global_slug, updated_at, created_at) F
 COPY public.payload_locked_documents_rels (id, "order", parent_id, path, users_id, media_id, classes_id, schools_id, teachers_id) FROM stdin;
 10	\N	10	document	1	\N	\N	\N	\N
 11	\N	10	user	1	\N	\N	\N	\N
+26	\N	21	document	\N	\N	3	\N	\N
+27	\N	21	user	1	\N	\N	\N	\N
 \.
 
 
@@ -961,7 +1093,7 @@ COPY public.payload_locked_documents_rels (id, "order", parent_id, path, users_i
 --
 
 COPY public.payload_migrations (id, name, batch, updated_at, created_at) FROM stdin;
-1	dev	-1	2026-03-24 17:42:22.131+00	2026-03-24 15:10:59.203+00
+1	dev	-1	2026-03-24 18:00:50.545+00	2026-03-24 15:10:59.203+00
 \.
 
 
@@ -976,7 +1108,7 @@ COPY public.payload_preferences (id, key, value, updated_at, created_at) FROM st
 2	collection-schools	{"editViewType": "default"}	2026-03-24 17:14:26.428+00	2026-03-24 15:11:56.175+00
 3	collection-teachers	{"limit": 10, "editViewType": "default"}	2026-03-24 17:38:54.055+00	2026-03-24 15:11:58.139+00
 1	collection-classes	{"limit": 10, "editViewType": "default"}	2026-03-24 17:42:22.153+00	2026-03-24 15:11:54.641+00
-5	locale	"de"	2026-03-24 17:42:35.831+00	2026-03-24 16:31:42.432+00
+5	locale	"de"	2026-03-24 18:06:28.013+00	2026-03-24 16:31:42.432+00
 \.
 
 
@@ -991,7 +1123,7 @@ COPY public.payload_preferences_rels (id, "order", parent_id, path, users_id) FR
 12	\N	2	user	1
 15	\N	3	user	1
 16	\N	1	user	1
-18	\N	5	user	1
+24	\N	5	user	1
 \.
 
 
@@ -999,9 +1131,17 @@ COPY public.payload_preferences_rels (id, "order", parent_id, path, users_id) FR
 -- Data for Name: schools; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.schools (id, name, description, updated_at, created_at) FROM stdin;
-1	Dance Emotion	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop school focused on feeling and flow.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	2026-03-24 17:15:04.684+00	2026-03-24 17:15:04.684+00
-2	Swingwerkstatt	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Älteste Swing-Tanzschule Hamburgs.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	2026-03-24 17:34:36.235+00	2026-03-24 17:34:36.235+00
+COPY public.schools (id, name, updated_at, created_at, website) FROM stdin;
+1	Dance Emotion	2026-03-24 17:15:04.684+00	2026-03-24 17:15:04.684+00	\N
+2	Swingwerkstatt	2026-03-24 17:34:36.235+00	2026-03-24 17:34:36.235+00	\N
+\.
+
+
+--
+-- Data for Name: schools_locales; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.schools_locales (description, id, _locale, _parent_id) FROM stdin;
 \.
 
 
@@ -1031,8 +1171,8 @@ COPY public.teachers (id, name, description, email, updated_at, created_at) FROM
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.users (id, updated_at, created_at, enable_a_p_i_key, api_key, api_key_index, email, reset_password_token, reset_password_expiration, salt, hash, login_attempts, lock_until) FROM stdin;
-1	2026-03-24 15:11:18.747+00	2026-03-24 15:11:18.745+00	\N	\N	\N	test@test.de	\N	\N	47e9a9a9fd97d9eb04c7b52c1da0adb4862e1f56585e9869332fda6608a91fa1	36d2d8d651212a2cf23109107e090201c7eefc90a02cee8344447773fe207c2a6e96c8ca9867d9330b161c47b7cd865113b7eeaf611f178a8873d0c5692ff4886c1c7ce816555aa10bf3efadcd6f5233f8b77bbc7e271ed68cc5a9beb31242ef983e85c111bcda3dc66b08d26a7d0c2ed6fc27f5417223874d339818d0ba7b0501dcdcd344403f7bd31a37deed3610e8cb4be228014ff58055d61cf38f93e791c3a980551d3acadc356a2733b92568674e1a6d495be0c061f35a204e225541cc41452c88454e729f837c7b61323520c4fa7102c5a1c24e5cfd98ca8825f5a257323db86443e49d311eecb2b77da4cec3f0d35a355df50f9496e88da9b2cc5fa9c77351346b273df610c0b896ee9b17e56973b49bd5c23337936ca0607a7da88426250ec0f7d98e54c14fc2cb17a1dbfdf19242127392b1f3384dd83099edc7e0623fff445e2ba7f03328488c4644636a15f58035c0530491689902bd204f202428ae2ce14937fa15e2ce64a7f7e42d098f3882eafbb7fe5bb9fd07f9054e26b73072ce3d224634c1f213e7ef1a60b4e51dea24b83a89f890d797a2e51c6ef4d7b2d42bc31c1bb78f20ad394cd27ecc90b88b62c7c69c12011d4d2470512a4f9674f54e02240fddeb9cc3d5f6d5d9659be4b91d3304c49773a4c9d09c53bf4c1e85420d11d80969853b0af3f065c81cd1a8598569f909eeb318f8b9d0f6c63fdf	0	\N
+COPY public.users (id, updated_at, created_at, enable_a_p_i_key, api_key, api_key_index, email, reset_password_token, reset_password_expiration, salt, hash, login_attempts, lock_until, roles) FROM stdin;
+1	2026-03-24 15:11:18.747+00	2026-03-24 15:11:18.745+00	\N	\N	\N	test@test.de	\N	\N	47e9a9a9fd97d9eb04c7b52c1da0adb4862e1f56585e9869332fda6608a91fa1	36d2d8d651212a2cf23109107e090201c7eefc90a02cee8344447773fe207c2a6e96c8ca9867d9330b161c47b7cd865113b7eeaf611f178a8873d0c5692ff4886c1c7ce816555aa10bf3efadcd6f5233f8b77bbc7e271ed68cc5a9beb31242ef983e85c111bcda3dc66b08d26a7d0c2ed6fc27f5417223874d339818d0ba7b0501dcdcd344403f7bd31a37deed3610e8cb4be228014ff58055d61cf38f93e791c3a980551d3acadc356a2733b92568674e1a6d495be0c061f35a204e225541cc41452c88454e729f837c7b61323520c4fa7102c5a1c24e5cfd98ca8825f5a257323db86443e49d311eecb2b77da4cec3f0d35a355df50f9496e88da9b2cc5fa9c77351346b273df610c0b896ee9b17e56973b49bd5c23337936ca0607a7da88426250ec0f7d98e54c14fc2cb17a1dbfdf19242127392b1f3384dd83099edc7e0623fff445e2ba7f03328488c4644636a15f58035c0530491689902bd204f202428ae2ce14937fa15e2ce64a7f7e42d098f3882eafbb7fe5bb9fd07f9054e26b73072ce3d224634c1f213e7ef1a60b4e51dea24b83a89f890d797a2e51c6ef4d7b2d42bc31c1bb78f20ad394cd27ecc90b88b62c7c69c12011d4d2470512a4f9674f54e02240fddeb9cc3d5f6d5d9659be4b91d3304c49773a4c9d09c53bf4c1e85420d11d80969853b0af3f065c81cd1a8598569f909eeb318f8b9d0f6c63fdf	0	\N	guest
 \.
 
 
@@ -1053,10 +1193,17 @@ SELECT pg_catalog.setval('public.classes_id_seq', 4, true);
 
 
 --
+-- Name: classes_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.classes_locales_id_seq', 12, true);
+
+
+--
 -- Name: classes_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.classes_rels_id_seq', 7, true);
+SELECT pg_catalog.setval('public.classes_rels_id_seq', 21, true);
 
 
 --
@@ -1091,14 +1238,14 @@ SELECT pg_catalog.setval('public.payload_kv_id_seq', 1, false);
 -- Name: payload_locked_documents_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_locked_documents_id_seq', 16, true);
+SELECT pg_catalog.setval('public.payload_locked_documents_id_seq', 25, true);
 
 
 --
 -- Name: payload_locked_documents_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_locked_documents_rels_id_seq', 17, true);
+SELECT pg_catalog.setval('public.payload_locked_documents_rels_id_seq', 35, true);
 
 
 --
@@ -1119,7 +1266,7 @@ SELECT pg_catalog.setval('public.payload_preferences_id_seq', 7, true);
 -- Name: payload_preferences_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_preferences_rels_id_seq', 18, true);
+SELECT pg_catalog.setval('public.payload_preferences_rels_id_seq', 24, true);
 
 
 --
@@ -1127,6 +1274,13 @@ SELECT pg_catalog.setval('public.payload_preferences_rels_id_seq', 18, true);
 --
 
 SELECT pg_catalog.setval('public.schools_id_seq', 2, true);
+
+
+--
+-- Name: schools_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.schools_locales_id_seq', 1, false);
 
 
 --
@@ -1148,6 +1302,14 @@ SELECT pg_catalog.setval('public.teachers_id_seq', 5, true);
 --
 
 SELECT pg_catalog.setval('public.users_id_seq', 1, true);
+
+
+--
+-- Name: classes_locales classes_locales_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.classes_locales
+    ADD CONSTRAINT classes_locales_pkey PRIMARY KEY (id);
 
 
 --
@@ -1239,6 +1401,14 @@ ALTER TABLE ONLY public.payload_preferences_rels
 
 
 --
+-- Name: schools_locales schools_locales_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.schools_locales
+    ADD CONSTRAINT schools_locales_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schools schools_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1283,6 +1453,13 @@ ALTER TABLE ONLY public.users_sessions
 --
 
 CREATE INDEX classes_created_at_idx ON public.classes USING btree (created_at);
+
+
+--
+-- Name: classes_locales_locale_parent_id_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX classes_locales_locale_parent_id_unique ON public.classes_locales USING btree (_locale, _parent_id);
 
 
 --
@@ -1510,6 +1687,13 @@ CREATE INDEX schools_created_at_idx ON public.schools USING btree (created_at);
 
 
 --
+-- Name: schools_locales_locale_parent_id_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX schools_locales_locale_parent_id_unique ON public.schools_locales USING btree (_locale, _parent_id);
+
+
+--
 -- Name: schools_rels_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1591,6 +1775,14 @@ CREATE INDEX users_sessions_parent_id_idx ON public.users_sessions USING btree (
 --
 
 CREATE INDEX users_updated_at_idx ON public.users USING btree (updated_at);
+
+
+--
+-- Name: classes_locales classes_locales_parent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.classes_locales
+    ADD CONSTRAINT classes_locales_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES public.classes(id) ON DELETE CASCADE;
 
 
 --
@@ -1690,6 +1882,14 @@ ALTER TABLE ONLY public.payload_preferences_rels
 
 
 --
+-- Name: schools_locales schools_locales_parent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.schools_locales
+    ADD CONSTRAINT schools_locales_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES public.schools(id) ON DELETE CASCADE;
+
+
+--
 -- Name: schools_rels schools_rels_parent_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1717,5 +1917,5 @@ ALTER TABLE ONLY public.users_sessions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict DeFcyQMQKZTH9BubbvgX7vXjC5Gwf1kC33EqMuxDh6z8eM1Te7aHbIah2mthMd4
+\unrestrict DpdwNaFw2xX2tOmsIw7KpSvEBOKtyAKOIOZIdbojHVjeowIFWpL5JieFAxZcXDF
 
