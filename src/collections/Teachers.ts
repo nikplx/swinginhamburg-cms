@@ -1,8 +1,12 @@
+import { isAdmin, isAtLeastWriter } from '@/access'
 import type { CollectionConfig } from 'payload'
 export const Teachers: CollectionConfig = {
   slug: 'teachers',
   access: {
     read: () => true,
+    create: isAtLeastWriter,
+    update: isAtLeastWriter,
+    delete: isAtLeastWriter,
   },
   admin: {
     useAsTitle: 'name',

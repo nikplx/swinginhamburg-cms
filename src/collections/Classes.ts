@@ -1,3 +1,4 @@
+import { canCreateClass, canManageClass, isAtLeastWriter, isAtLeastWriterField } from '@/access'
 import type { CollectionConfig } from 'payload'
 
 export const Classes: CollectionConfig = {
@@ -7,6 +8,9 @@ export const Classes: CollectionConfig = {
   },
   access: {
     read: () => true,
+    create: canCreateClass,
+    update: canManageClass,
+    delete: canManageClass,
   },
   fields: [
     {
@@ -36,6 +40,10 @@ export const Classes: CollectionConfig = {
       name: 'school',
       type: 'relationship',
       relationTo: 'schools',
+      required: true,
+      access: {
+        update: isAtLeastWriterField,
+      },
     },
     {
       name: 'teachers',
@@ -47,21 +55,21 @@ export const Classes: CollectionConfig = {
       name: 'address',
       type: 'text',
       required: true,
-      defaultValue: "Hamburg",
+      defaultValue: 'Hamburg',
       // Optional: Set to true if you want to hide this field and only let the custom component manage it
-      // admin: { hidden: true } 
+      // admin: { hidden: true }
     },
     {
       name: 'location',
       type: 'point',
       required: true,
       // Corrected to [Longitude, Latitude] for Hamburg
-      defaultValue: [9.993682, 53.551086], 
+      defaultValue: [9.993682, 53.551086],
       admin: {
         components: {
-          Field: '@/components/LocationSearchField', 
-        }
-      }
-    }
+          Field: '@/components/LocationSearchField',
+        },
+      },
+    },
   ],
 }

@@ -4,7 +4,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import {migrations} from './migrations'
+import { migrations } from './migrations'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -33,11 +33,12 @@ export default buildConfig({
       {
         label: 'German',
         code: 'de',
-      }
+      },
     ],
-    defaultLocale: 'en'
+    defaultLocale: 'en',
   },
   globals: [Index],
+  serverURL: 'https://cms.swinginhamburg.eins3und30.de',
   collections: [Users, Media, Classes, Schools, Teachers],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -53,5 +54,4 @@ export default buildConfig({
   }),
   sharp,
   plugins: [],
-
 })

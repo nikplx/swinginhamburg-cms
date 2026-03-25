@@ -133,7 +133,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  roles: 'admin' | 'writer' | 'school' | 'guest';
+  role: 'admin' | 'writer' | 'school' | 'guest';
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -185,7 +185,7 @@ export interface Class {
   description: string;
   weekday: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
   cancelled?: string | null;
-  school?: (number | null) | School;
+  school: number | School;
   teachers?: (number | Teacher)[] | null;
   address: string;
   /**
@@ -220,8 +220,10 @@ export interface School {
   } | null;
   website?: string | null;
   teachers?: (number | Teacher)[] | null;
+  owner?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -340,7 +342,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  roles?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
@@ -404,8 +406,10 @@ export interface SchoolsSelect<T extends boolean = true> {
   description?: T;
   website?: T;
   teachers?: T;
+  owner?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
