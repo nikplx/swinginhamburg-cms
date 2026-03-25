@@ -38,7 +38,7 @@ export default buildConfig({
     defaultLocale: 'en',
   },
   globals: [Index],
-  serverURL: 'https://cms.swinginhamburg.eins3und30.de',
+  serverURL: process.env.DOMAIN || 'http://localhost:3000',
   collections: [Users, Media, Classes, Schools, Teachers],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
