@@ -21,7 +21,7 @@ export const Users: CollectionConfig = {
         }
         const { token, user } = req
 
-        const setupURL = `${process.env.DOMAIN || "http://localhost:3000"}/setup-account?token=${token}`
+        const setupURL = `${process.env.DOMAIN || "http://localhost:3000"}/admin/reset/${token}`
 
         return `
           <h1>Welcome, ${user.email}!</h1>
