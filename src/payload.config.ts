@@ -13,6 +13,7 @@ import { Schools } from './collections/Schools'
 import { Teachers } from './collections/Teachers'
 import { Index } from './globals'
 import { integer, pgTable, varchar } from '@payloadcms/db-postgres/drizzle/pg-core'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,6 +25,11 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
+  email: resendAdapter({
+    defaultFromAddress: 'swinginhamburg@eins3und30.de',
+    defaultFromName: 'Swing in Hamburg Support',
+    apiKey: process.env.RESEND_API_KEY || ''
+  }),
   localization: {
     locales: [
       {
