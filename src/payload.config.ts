@@ -26,9 +26,9 @@ export default buildConfig({
     },
   },
   email: resendAdapter({
-    defaultFromAddress: 'swinginhamburg@eins3und30.de',
+    defaultFromAddress: 'swinginhamburg@eins9und30.de',
     defaultFromName: 'Swing in Hamburg Support',
-    apiKey: process.env.RESEND_API_KEY || ''
+    apiKey: process.env.RESEND_API_KEY || '',
   }),
   localization: {
     locales: [
