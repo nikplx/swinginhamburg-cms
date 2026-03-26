@@ -51,6 +51,17 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
+  endpoints: [
+    {
+      path: '/health',
+      method: 'get',
+      handler: async (_) => {
+        return Response.json({
+          message: "ok",
+        })
+      },
+    },
+  ],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
