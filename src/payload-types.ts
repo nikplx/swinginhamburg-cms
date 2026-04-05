@@ -133,7 +133,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  role: 'admin' | 'writer' | 'school' | 'guest';
+  role: 'system' | 'admin' | 'writer' | 'school' | 'guest';
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;

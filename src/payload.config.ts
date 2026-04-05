@@ -25,11 +25,11 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  email: resendAdapter({
+  email: process.env.RESEND_API_KEY ? resendAdapter({
     defaultFromAddress: 'swinginhamburg@eins9und30.de',
     defaultFromName: 'Swing in Hamburg Support',
     apiKey: process.env.RESEND_API_KEY || '',
-  }),
+  }) : undefined,
   localization: {
     locales: [
       {

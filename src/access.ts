@@ -44,24 +44,25 @@ export const canCreateClass: Access = async ({ req, data }) => {
   if (user.role === 'admin' || user.role === 'writer') return true
   if (user.role !== 'school') return false
 
-  // If the user is a school role, they MUST provide a school ID
   const schoolId = data?.school
-  if (!schoolId) return false 
 
-  // Fetch the target school to verify ownership
+  // === THE NEW FIX ===
+  // If no school is provided yet (e.g., loading the form or evaluating UI access),
+  // allow it to pass. Payload's schema validation will prevent actual database 
+  // inserts if the user leaves the required 'school' field blank.
+  if (!schoolId) return true 
+
+  // If a school IS provided, verify they own it before allowing the save
   try {
     const school = await req.payload.findByID({
       collection: 'schools',
       id: schoolId,
-      depth: 0, // Performance optimization: we only need the raw ID, not populated relationships
+      depth: 0,
     })
 
-    // Handle whether the owner field is populated or just an ID
     const ownerId = typeof school.owner === 'object' ? school.owner?.id : school.owner
-
     return ownerId === user.id
   } catch (error) {
-    // If the school doesn't exist or there's a DB error, deny access
     return false
   }
 }
@@ -78,6 +79,7 @@ export const canManageClass: Access = async ({ req }) => {
   // Find all schools owned by this specific user
   const ownedSchools = await req.payload.find({
     collection: 'schools',
+    req,
     where: {
       owner: {
         equals: user.id,

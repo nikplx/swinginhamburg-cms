@@ -62,7 +62,7 @@ export const Users: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'guest',
-      options: ['admin', 'writer', 'school', 'guest'],
+      options: ['system', 'admin', 'writer', 'school', 'guest'],
       access: {
         update: isAdminField,
       },
