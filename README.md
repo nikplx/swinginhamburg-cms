@@ -14,6 +14,16 @@ To spin up this template locally, follow these steps:
 
 After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
 
+#### Initial setup
+
+Create a `.env` file with the following variables/secrets
+
+```
+DATABASE_URL=postgresql://postgres:changeme@localhost:5432/postgres
+PAYLOAD_SECRET=
+PAYLOAD_API_KEY=
+```
+
 ### Development
 
 1. First [clone the repo](#clone) if you have not done so already
