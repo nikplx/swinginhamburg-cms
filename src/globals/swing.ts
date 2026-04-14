@@ -1,8 +1,8 @@
 import { isAtLeastWriter } from '@/access'
 import { GlobalConfig } from 'payload'
 
-export const About: GlobalConfig = {
-  slug: 'about',
+export const Swing: GlobalConfig = {
+  slug: 'swing',
   access: {
     read: () => true,
     update: isAtLeastWriter,

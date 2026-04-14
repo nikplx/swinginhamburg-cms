@@ -11,9 +11,11 @@ import { Media } from './collections/Media'
 import { Classes } from './collections/Classes'
 import { Schools } from './collections/Schools'
 import { Teachers } from './collections/Teachers'
-import { Index } from './globals'
 import { integer, pgTable, varchar } from '@payloadcms/db-postgres/drizzle/pg-core'
 import { resendAdapter } from '@payloadcms/email-resend'
+import { Index } from './globals/index'
+import { About } from './globals/about'
+import { Swing } from './globals/swing'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -43,7 +45,7 @@ export default buildConfig({
     ],
     defaultLocale: 'en',
   },
-  globals: [Index],
+  globals: [Index,About,Swing],
   serverURL: process.env.DOMAIN || 'http://localhost:3000',
   collections: [Users, Media, Classes, Schools, Teachers],
   editor: lexicalEditor(),
