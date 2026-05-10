@@ -5,6 +5,7 @@ export const Users: CollectionConfig = {
   slug: 'users',
   access: {
     read: canReadUser,
+    update: isAdmin,
     create: isAdmin,
     delete: isAdmin,
   },
