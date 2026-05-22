@@ -227,7 +227,6 @@ export interface School {
   owner?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -413,7 +412,6 @@ export interface SchoolsSelect<T extends boolean = true> {
   owner?: T;
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -570,7 +568,29 @@ export interface About {
 export interface Swing {
   id: number;
   title?: string | null;
-  content?: {
+  whatIsSwing?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  dances?:
+    | {
+        name: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  howToLearn?: {
     root: {
       type: string;
       children: {
@@ -621,7 +641,15 @@ export interface AboutSelect<T extends boolean = true> {
  */
 export interface SwingSelect<T extends boolean = true> {
   title?: T;
-  content?: T;
+  whatIsSwing?: T;
+  dances?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        id?: T;
+      };
+  howToLearn?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -14,7 +14,29 @@ export const Swing: GlobalConfig = {
       localized: true,
     },
     {
-      name: 'content',
+      name: 'whatIsSwing',
+      type: 'richText',
+      localized: true,
+    },
+    {
+      name: 'dances',
+      type: 'array',
+      label: 'Dances',
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          localized: true,
+        }
+      ]
+    },
+    {
+      name: 'howToLearn',
       type: 'richText',
       localized: true,
     },

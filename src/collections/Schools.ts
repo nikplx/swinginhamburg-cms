@@ -12,9 +12,6 @@ export const Schools: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
   },
-  versions: {
-    drafts: true,
-  },
   access: {
     read: () => true,
     create: isAdmin,
