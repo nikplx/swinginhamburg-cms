@@ -72,6 +72,7 @@ export interface Config {
     classes: Class;
     schools: School;
     teachers: Teacher;
+    dances: Dance;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +85,7 @@ export interface Config {
     classes: ClassesSelect<false> | ClassesSelect<true>;
     schools: SchoolsSelect<false> | SchoolsSelect<true>;
     teachers: TeachersSelect<false> | TeachersSelect<true>;
+    dances: DancesSelect<false> | DancesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -256,6 +258,31 @@ export interface Teacher {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dances".
+ */
+export interface Dance {
+  id: number;
+  name: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -297,6 +324,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'teachers';
         value: number | Teacher;
+      } | null)
+    | ({
+        relationTo: 'dances';
+        value: number | Dance;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -421,6 +452,16 @@ export interface TeachersSelect<T extends boolean = true> {
   name?: T;
   description?: T;
   email?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dances_select".
+ */
+export interface DancesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }

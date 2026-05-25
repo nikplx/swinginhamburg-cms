@@ -14,9 +14,9 @@ export const Schools: CollectionConfig = {
   },
   access: {
     read: () => true,
-    create: isAdmin,
+    create: isAtLeastWriter,
     update: isOwnerOrStaff,
-    delete: isAdmin,
+    delete: isAtLeastWriter,
   },
   fields: [
     {
