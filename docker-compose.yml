@@ -10,13 +10,7 @@ services:
        - postgres:/data/postgres
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
-    networks:
-      - postgres
     restart: unless-stopped
   
-networks:
-  postgres:
-    driver: bridge
-
 volumes:
     postgres:
