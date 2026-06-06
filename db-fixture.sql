@@ -19,8 +19,6 @@ SET row_security = off;
 
 ALTER TABLE IF EXISTS ONLY public.users_sessions DROP CONSTRAINT IF EXISTS users_sessions_parent_id_fk;
 ALTER TABLE IF EXISTS ONLY public.swing_locales DROP CONSTRAINT IF EXISTS swing_locales_parent_id_fk;
-ALTER TABLE IF EXISTS ONLY public.swing_dances DROP CONSTRAINT IF EXISTS swing_dances_parent_id_fk;
-ALTER TABLE IF EXISTS ONLY public.swing_dances_locales DROP CONSTRAINT IF EXISTS swing_dances_locales_parent_id_fk;
 ALTER TABLE IF EXISTS ONLY public.schools_rels DROP CONSTRAINT IF EXISTS schools_rels_teachers_fk;
 ALTER TABLE IF EXISTS ONLY public.schools_rels DROP CONSTRAINT IF EXISTS schools_rels_parent_fk;
 ALTER TABLE IF EXISTS ONLY public.schools DROP CONSTRAINT IF EXISTS schools_owner_id_users_id_fk;
@@ -32,13 +30,19 @@ ALTER TABLE IF EXISTS ONLY public.payload_locked_documents_rels DROP CONSTRAINT 
 ALTER TABLE IF EXISTS ONLY public.payload_locked_documents_rels DROP CONSTRAINT IF EXISTS payload_locked_documents_rels_schools_fk;
 ALTER TABLE IF EXISTS ONLY public.payload_locked_documents_rels DROP CONSTRAINT IF EXISTS payload_locked_documents_rels_parent_fk;
 ALTER TABLE IF EXISTS ONLY public.payload_locked_documents_rels DROP CONSTRAINT IF EXISTS payload_locked_documents_rels_media_fk;
+ALTER TABLE IF EXISTS ONLY public.payload_locked_documents_rels DROP CONSTRAINT IF EXISTS payload_locked_documents_rels_events_fk;
 ALTER TABLE IF EXISTS ONLY public.payload_locked_documents_rels DROP CONSTRAINT IF EXISTS payload_locked_documents_rels_dances_fk;
 ALTER TABLE IF EXISTS ONLY public.payload_locked_documents_rels DROP CONSTRAINT IF EXISTS payload_locked_documents_rels_classes_fk;
 ALTER TABLE IF EXISTS ONLY public.index_locales DROP CONSTRAINT IF EXISTS index_locales_parent_id_fk;
+ALTER TABLE IF EXISTS ONLY public.events_rels DROP CONSTRAINT IF EXISTS events_rels_parent_fk;
+ALTER TABLE IF EXISTS ONLY public.events_rels DROP CONSTRAINT IF EXISTS events_rels_dances_fk;
+ALTER TABLE IF EXISTS ONLY public.events_locales DROP CONSTRAINT IF EXISTS events_locales_parent_id_fk;
+ALTER TABLE IF EXISTS ONLY public.events DROP CONSTRAINT IF EXISTS events_background_image_id_media_id_fk;
 ALTER TABLE IF EXISTS ONLY public.dances_locales DROP CONSTRAINT IF EXISTS dances_locales_parent_id_fk;
 ALTER TABLE IF EXISTS ONLY public.classes DROP CONSTRAINT IF EXISTS classes_school_id_schools_id_fk;
 ALTER TABLE IF EXISTS ONLY public.classes_rels DROP CONSTRAINT IF EXISTS classes_rels_teachers_fk;
 ALTER TABLE IF EXISTS ONLY public.classes_rels DROP CONSTRAINT IF EXISTS classes_rels_parent_fk;
+ALTER TABLE IF EXISTS ONLY public.classes_rels DROP CONSTRAINT IF EXISTS classes_rels_dances_fk;
 ALTER TABLE IF EXISTS ONLY public.classes_locales DROP CONSTRAINT IF EXISTS classes_locales_parent_id_fk;
 ALTER TABLE IF EXISTS ONLY public.about_locales DROP CONSTRAINT IF EXISTS about_locales_parent_id_fk;
 DROP INDEX IF EXISTS public.users_updated_at_idx;
@@ -49,9 +53,6 @@ DROP INDEX IF EXISTS public.users_created_at_idx;
 DROP INDEX IF EXISTS public.teachers_updated_at_idx;
 DROP INDEX IF EXISTS public.teachers_created_at_idx;
 DROP INDEX IF EXISTS public.swing_locales_locale_parent_id_unique;
-DROP INDEX IF EXISTS public.swing_dances_parent_id_idx;
-DROP INDEX IF EXISTS public.swing_dances_order_idx;
-DROP INDEX IF EXISTS public.swing_dances_locales_locale_parent_id_unique;
 DROP INDEX IF EXISTS public.schools_updated_at_idx;
 DROP INDEX IF EXISTS public.schools_rels_teachers_id_idx;
 DROP INDEX IF EXISTS public.schools_rels_path_idx;
@@ -77,6 +78,7 @@ DROP INDEX IF EXISTS public.payload_locked_documents_rels_path_idx;
 DROP INDEX IF EXISTS public.payload_locked_documents_rels_parent_idx;
 DROP INDEX IF EXISTS public.payload_locked_documents_rels_order_idx;
 DROP INDEX IF EXISTS public.payload_locked_documents_rels_media_id_idx;
+DROP INDEX IF EXISTS public.payload_locked_documents_rels_events_id_idx;
 DROP INDEX IF EXISTS public.payload_locked_documents_rels_dances_id_idx;
 DROP INDEX IF EXISTS public.payload_locked_documents_rels_classes_id_idx;
 DROP INDEX IF EXISTS public.payload_locked_documents_global_slug_idx;
@@ -86,6 +88,14 @@ DROP INDEX IF EXISTS public.media_updated_at_idx;
 DROP INDEX IF EXISTS public.media_filename_idx;
 DROP INDEX IF EXISTS public.media_created_at_idx;
 DROP INDEX IF EXISTS public.index_locales_locale_parent_id_unique;
+DROP INDEX IF EXISTS public.events_updated_at_idx;
+DROP INDEX IF EXISTS public.events_rels_path_idx;
+DROP INDEX IF EXISTS public.events_rels_parent_idx;
+DROP INDEX IF EXISTS public.events_rels_order_idx;
+DROP INDEX IF EXISTS public.events_rels_dances_id_idx;
+DROP INDEX IF EXISTS public.events_locales_locale_parent_id_unique;
+DROP INDEX IF EXISTS public.events_created_at_idx;
+DROP INDEX IF EXISTS public.events_background_image_idx;
 DROP INDEX IF EXISTS public.dances_updated_at_idx;
 DROP INDEX IF EXISTS public.dances_locales_locale_parent_id_unique;
 DROP INDEX IF EXISTS public.dances_created_at_idx;
@@ -95,6 +105,7 @@ DROP INDEX IF EXISTS public.classes_rels_teachers_id_idx;
 DROP INDEX IF EXISTS public.classes_rels_path_idx;
 DROP INDEX IF EXISTS public.classes_rels_parent_idx;
 DROP INDEX IF EXISTS public.classes_rels_order_idx;
+DROP INDEX IF EXISTS public.classes_rels_dances_id_idx;
 DROP INDEX IF EXISTS public.classes_locales_locale_parent_id_unique;
 DROP INDEX IF EXISTS public.classes_created_at_idx;
 DROP INDEX IF EXISTS public.about_locales_locale_parent_id_unique;
@@ -103,8 +114,6 @@ ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_pkey;
 ALTER TABLE IF EXISTS ONLY public.teachers DROP CONSTRAINT IF EXISTS teachers_pkey;
 ALTER TABLE IF EXISTS ONLY public.swing DROP CONSTRAINT IF EXISTS swing_pkey;
 ALTER TABLE IF EXISTS ONLY public.swing_locales DROP CONSTRAINT IF EXISTS swing_locales_pkey;
-ALTER TABLE IF EXISTS ONLY public.swing_dances DROP CONSTRAINT IF EXISTS swing_dances_pkey;
-ALTER TABLE IF EXISTS ONLY public.swing_dances_locales DROP CONSTRAINT IF EXISTS swing_dances_locales_pkey;
 ALTER TABLE IF EXISTS ONLY public.schools_rels DROP CONSTRAINT IF EXISTS schools_rels_pkey;
 ALTER TABLE IF EXISTS ONLY public.schools DROP CONSTRAINT IF EXISTS schools_pkey;
 ALTER TABLE IF EXISTS ONLY public.schools_locales DROP CONSTRAINT IF EXISTS schools_locales_pkey;
@@ -117,6 +126,9 @@ ALTER TABLE IF EXISTS ONLY public.payload_kv DROP CONSTRAINT IF EXISTS payload_k
 ALTER TABLE IF EXISTS ONLY public.media DROP CONSTRAINT IF EXISTS media_pkey;
 ALTER TABLE IF EXISTS ONLY public.index DROP CONSTRAINT IF EXISTS index_pkey;
 ALTER TABLE IF EXISTS ONLY public.index_locales DROP CONSTRAINT IF EXISTS index_locales_pkey;
+ALTER TABLE IF EXISTS ONLY public.events_rels DROP CONSTRAINT IF EXISTS events_rels_pkey;
+ALTER TABLE IF EXISTS ONLY public.events DROP CONSTRAINT IF EXISTS events_pkey;
+ALTER TABLE IF EXISTS ONLY public.events_locales DROP CONSTRAINT IF EXISTS events_locales_pkey;
 ALTER TABLE IF EXISTS ONLY public.dances DROP CONSTRAINT IF EXISTS dances_pkey;
 ALTER TABLE IF EXISTS ONLY public.dances_locales DROP CONSTRAINT IF EXISTS dances_locales_pkey;
 ALTER TABLE IF EXISTS ONLY public.classes_rels DROP CONSTRAINT IF EXISTS classes_rels_pkey;
@@ -127,7 +139,6 @@ ALTER TABLE IF EXISTS ONLY public.about_locales DROP CONSTRAINT IF EXISTS about_
 ALTER TABLE IF EXISTS public.users ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.teachers ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.swing_locales ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.swing_dances_locales ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.swing ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.schools_rels ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.schools_locales ALTER COLUMN id DROP DEFAULT;
@@ -141,6 +152,9 @@ ALTER TABLE IF EXISTS public.payload_kv ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.media ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.index_locales ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.index ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.events_rels ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.events_locales ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.events ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.dances_locales ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.dances ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE IF EXISTS public.classes_rels ALTER COLUMN id DROP DEFAULT;
@@ -156,9 +170,6 @@ DROP TABLE IF EXISTS public.teachers;
 DROP SEQUENCE IF EXISTS public.swing_locales_id_seq;
 DROP TABLE IF EXISTS public.swing_locales;
 DROP SEQUENCE IF EXISTS public.swing_id_seq;
-DROP SEQUENCE IF EXISTS public.swing_dances_locales_id_seq;
-DROP TABLE IF EXISTS public.swing_dances_locales;
-DROP TABLE IF EXISTS public.swing_dances;
 DROP TABLE IF EXISTS public.swing;
 DROP SEQUENCE IF EXISTS public.schools_rels_id_seq;
 DROP TABLE IF EXISTS public.schools_rels;
@@ -184,6 +195,12 @@ DROP SEQUENCE IF EXISTS public.index_locales_id_seq;
 DROP TABLE IF EXISTS public.index_locales;
 DROP SEQUENCE IF EXISTS public.index_id_seq;
 DROP TABLE IF EXISTS public.index;
+DROP SEQUENCE IF EXISTS public.events_rels_id_seq;
+DROP TABLE IF EXISTS public.events_rels;
+DROP SEQUENCE IF EXISTS public.events_locales_id_seq;
+DROP TABLE IF EXISTS public.events_locales;
+DROP SEQUENCE IF EXISTS public.events_id_seq;
+DROP TABLE IF EXISTS public.events;
 DROP SEQUENCE IF EXISTS public.dances_locales_id_seq;
 DROP TABLE IF EXISTS public.dances_locales;
 DROP SEQUENCE IF EXISTS public.dances_id_seq;
@@ -199,6 +216,7 @@ DROP TABLE IF EXISTS public.about_locales;
 DROP SEQUENCE IF EXISTS public.about_id_seq;
 DROP TABLE IF EXISTS public.about;
 DROP TYPE IF EXISTS public.enum_users_role;
+DROP TYPE IF EXISTS public.enum_events_type;
 DROP TYPE IF EXISTS public.enum_classes_weekday;
 DROP TYPE IF EXISTS public._locales;
 DROP EXTENSION IF EXISTS vector;
@@ -259,6 +277,18 @@ CREATE TYPE public.enum_classes_weekday AS ENUM (
 
 
 ALTER TYPE public.enum_classes_weekday OWNER TO postgres;
+
+--
+-- Name: enum_events_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.enum_events_type AS ENUM (
+    'Workshop',
+    'Social'
+);
+
+
+ALTER TYPE public.enum_events_type OWNER TO postgres;
 
 --
 -- Name: enum_users_role; Type: TYPE; Schema: public; Owner: postgres
@@ -396,7 +426,7 @@ ALTER SEQUENCE public.classes_id_seq OWNED BY public.classes.id;
 --
 
 CREATE TABLE public.classes_locales (
-    description character varying NOT NULL,
+    description character varying,
     weekday public.enum_classes_weekday NOT NULL,
     id integer NOT NULL,
     _locale public._locales NOT NULL,
@@ -437,7 +467,8 @@ CREATE TABLE public.classes_rels (
     "order" integer,
     parent_id integer NOT NULL,
     path character varying NOT NULL,
-    teachers_id integer
+    teachers_id integer,
+    dances_id integer
 );
 
 
@@ -472,7 +503,8 @@ ALTER SEQUENCE public.classes_rels_id_seq OWNED BY public.classes_rels.id;
 CREATE TABLE public.dances (
     id integer NOT NULL,
     updated_at timestamp(3) with time zone DEFAULT now() NOT NULL,
-    created_at timestamp(3) with time zone DEFAULT now() NOT NULL
+    created_at timestamp(3) with time zone DEFAULT now() NOT NULL,
+    short_name character varying
 );
 
 
@@ -535,6 +567,126 @@ ALTER SEQUENCE public.dances_locales_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.dances_locales_id_seq OWNED BY public.dances_locales.id;
+
+
+--
+-- Name: events; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.events (
+    id integer NOT NULL,
+    type public.enum_events_type NOT NULL,
+    title character varying NOT NULL,
+    start_date timestamp(3) with time zone NOT NULL,
+    end_date timestamp(3) with time zone,
+    address character varying DEFAULT 'Hamburg'::character varying NOT NULL,
+    price numeric,
+    cancelled character varying,
+    background_image_id integer,
+    updated_at timestamp(3) with time zone DEFAULT now() NOT NULL,
+    created_at timestamp(3) with time zone DEFAULT now() NOT NULL,
+    start_time character varying,
+    end_time character varying,
+    location public.geometry(Point) DEFAULT '0101000020E61000006C3F19E3C3FC234048A46DFC89C64A40'::public.geometry NOT NULL,
+    location_name character varying
+);
+
+
+ALTER TABLE public.events OWNER TO postgres;
+
+--
+-- Name: events_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.events_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.events_id_seq OWNER TO postgres;
+
+--
+-- Name: events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.events_id_seq OWNED BY public.events.id;
+
+
+--
+-- Name: events_locales; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.events_locales (
+    description jsonb,
+    id integer NOT NULL,
+    _locale public._locales NOT NULL,
+    _parent_id integer NOT NULL
+);
+
+
+ALTER TABLE public.events_locales OWNER TO postgres;
+
+--
+-- Name: events_locales_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.events_locales_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.events_locales_id_seq OWNER TO postgres;
+
+--
+-- Name: events_locales_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.events_locales_id_seq OWNED BY public.events_locales.id;
+
+
+--
+-- Name: events_rels; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.events_rels (
+    id integer NOT NULL,
+    "order" integer,
+    parent_id integer NOT NULL,
+    path character varying NOT NULL,
+    dances_id integer
+);
+
+
+ALTER TABLE public.events_rels OWNER TO postgres;
+
+--
+-- Name: events_rels_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.events_rels_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.events_rels_id_seq OWNER TO postgres;
+
+--
+-- Name: events_rels_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.events_rels_id_seq OWNED BY public.events_rels.id;
 
 
 --
@@ -744,7 +896,8 @@ CREATE TABLE public.payload_locked_documents_rels (
     classes_id integer,
     schools_id integer,
     teachers_id integer,
-    dances_id integer
+    dances_id integer,
+    events_id integer
 );
 
 
@@ -1008,56 +1161,6 @@ CREATE TABLE public.swing (
 ALTER TABLE public.swing OWNER TO postgres;
 
 --
--- Name: swing_dances; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.swing_dances (
-    _order integer NOT NULL,
-    _parent_id integer NOT NULL,
-    id character varying NOT NULL,
-    name character varying NOT NULL
-);
-
-
-ALTER TABLE public.swing_dances OWNER TO postgres;
-
---
--- Name: swing_dances_locales; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.swing_dances_locales (
-    description character varying,
-    id integer NOT NULL,
-    _locale public._locales NOT NULL,
-    _parent_id character varying NOT NULL
-);
-
-
-ALTER TABLE public.swing_dances_locales OWNER TO postgres;
-
---
--- Name: swing_dances_locales_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.swing_dances_locales_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.swing_dances_locales_id_seq OWNER TO postgres;
-
---
--- Name: swing_dances_locales_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.swing_dances_locales_id_seq OWNED BY public.swing_dances_locales.id;
-
-
---
 -- Name: swing_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1266,6 +1369,27 @@ ALTER TABLE ONLY public.dances_locales ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: events id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events ALTER COLUMN id SET DEFAULT nextval('public.events_id_seq'::regclass);
+
+
+--
+-- Name: events_locales id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events_locales ALTER COLUMN id SET DEFAULT nextval('public.events_locales_id_seq'::regclass);
+
+
+--
+-- Name: events_rels id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events_rels ALTER COLUMN id SET DEFAULT nextval('public.events_rels_id_seq'::regclass);
+
+
+--
 -- Name: index id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1357,13 +1481,6 @@ ALTER TABLE ONLY public.swing ALTER COLUMN id SET DEFAULT nextval('public.swing_
 
 
 --
--- Name: swing_dances_locales id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.swing_dances_locales ALTER COLUMN id SET DEFAULT nextval('public.swing_dances_locales_id_seq'::regclass);
-
-
---
 -- Name: swing_locales id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1398,8 +1515,8 @@ COPY public.about (id, updated_at, created_at) FROM stdin;
 --
 
 COPY public.about_locales (title, content, id, _locale, _parent_id) FROM stdin;
-\N	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Über swinginhamburg.de", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "In Hamburg gibt es eine große Zahl von Organisationen und Einzelpersonen, die regelmäßigen Swingtanz-Unterricht oder einmalige Workshops anbieten.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "swinginhamburg.de hat das Ziel, eine Übersicht dieser Angebote zu schaffen. Die Website wird betrieben von einer Gruppe Freiwilliger aus der Hamburger Szene.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Diese Seite ist stark inspiriert von ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"id": "69fbac52b63620000c2173ac", "type": "link", "fields": {"url": "https://", "linkType": "custom"}, "format": "", "indent": 0, "version": 3, "children": [{"mode": "normal", "text": "swingoutlondon.co.uk", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"mode": "normal", "text": " — das Team dort hat eine sehr übersichtliche Seite geschaffen und in die public domain gestellt, wofür wir sehr dankbar sind.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Unsere Ziele", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Szenefokus", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir sehen uns als Info-Plattform für die Swingtanzszene, weniger als Werbeplattform für Kurse oder Events. Das bedeutet, dass wir nur solche Kurse und Workshops listen, die unsere Zielgruppe interessieren. Was dazugehört, haben wir in unserer Listings Policy zusammengefasst. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Unabhängigkeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir sind nicht mit Tanzschulen oder anderen Organisationen verbunden. Wir nehmen niemals Gegenleistungen an, um Organisationen oder Events zu bewerben. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Vollständigkeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir listen alle regelmäßigen Kurse und auch einmalige Workshops, egal welches Level und welcher Swingtanz. Die Daten werden von den Anbieter:innen gepflegt.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [], "direction": null}], "direction": null}}	4	en	1
-Über swinginhamburg.de	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "In Hamburg gibt es eine große Zahl von Organisationen und Einzelpersonen, die regelmäßigen Swingtanz-Unterricht oder einmalige Workshops anbieten.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "swinginhamburg.de hat das Ziel, eine Übersicht dieser Angebote zu schaffen. Die Website wird betrieben von einer Gruppe Freiwilliger aus der Hamburger Szene.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Diese Seite ist stark inspiriert von ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"id": "69fbac52b63620000c2173ac", "type": "link", "fields": {"url": "https://", "linkType": "custom"}, "format": "", "indent": 0, "version": 3, "children": [{"mode": "normal", "text": "swingoutlondon.co.uk", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"mode": "normal", "text": " — das Team dort hat eine sehr übersichtliche Seite geschaffen und in die public domain gestellt, wofür wir sehr dankbar sind.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Unsere Ziele", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Szenefokus", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir sehen uns als Info-Plattform für die Swingtanzszene, weniger als Werbeplattform für Kurse oder Events. Das bedeutet, dass wir nur solche Kurse und Workshops listen, die unsere Zielgruppe interessieren. Was dazugehört, haben wir in unserer Listings Policy zusammengefasst. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Unabhängigkeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir sind nicht mit Tanzschulen oder anderen Organisationen verbunden. Wir nehmen niemals Gegenleistungen an, um Organisationen oder Events zu bewerben. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Vollständigkeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir listen alle regelmäßigen Kurse und auch einmalige Workshops, egal welches Level und welcher Swingtanz. Die Daten werden von den Anbieter:innen gepflegt.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [], "direction": null}], "direction": null}}	5	de	1
+\N	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Über swinginhamburg.de", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "In Hamburg gibt es eine große Zahl von Organisationen und Einzelpersonen, die regelmäßigen Swingtanz-Unterricht oder einmalige Workshops anbieten.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "swinginhamburg.de hat das Ziel, eine Übersicht dieser Angebote zu schaffen. Die Website wird betrieben von einer Gruppe Freiwilliger aus der Hamburger Szene.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Diese Seite ist stark inspiriert von ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"id": "69fbac52b63620000c2173ac", "type": "link", "fields": {"url": "https://", "linkType": "custom"}, "format": "", "indent": 0, "version": 3, "children": [{"mode": "normal", "text": "swingoutlondon.co.uk", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"mode": "normal", "text": " — das Team dort hat eine sehr übersichtliche Seite geschaffen und in die public domain gestellt, wofür wir sehr dankbar sind.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Unsere Ziele", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Szenefokus", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir sehen uns als Info-Plattform für die Swingtanzszene, weniger als Werbeplattform für Kurse oder Events. Das bedeutet, dass wir nur solche Kurse und Workshops listen, die unsere Zielgruppe interessieren. Was dazugehört, haben wir in unserer Listings Policy zusammengefasst. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Unabhängigkeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir sind nicht mit Tanzschulen oder anderen Organisationen verbunden. Wir nehmen niemals Gegenleistungen an, um Organisationen oder Events zu bewerben. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Vollständigkeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir listen alle regelmäßigen Kurse und auch einmalige Workshops, egal welches Level und welcher Swingtanz. Die Daten werden von den Anbieter:innen gepflegt.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [], "direction": null}], "direction": null}}	10	en	1
+	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Über uns", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "In Hamburg gibt es eine große Zahl von Organisationen und Einzelpersonen, die regelmäßigen Swingtanz-Unterricht oder einmalige Workshops anbieten.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "swinginhamburg.de hat das Ziel, eine Übersicht dieser Angebote zu schaffen. Die Website wird betrieben von einer Gruppe Freiwilliger aus der Hamburger Szene.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Diese Seite ist stark inspiriert von ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"id": "69fbac52b63620000c2173ac", "type": "link", "fields": {"url": "https://", "linkType": "custom"}, "format": "", "indent": 0, "version": 3, "children": [{"mode": "normal", "text": "swingoutlondon.co.uk", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"mode": "normal", "text": " — das Team dort hat eine sehr übersichtliche Seite geschaffen und in die public domain gestellt, wofür wir sehr dankbar sind.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Unsere Ziele", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Szenefokus", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir sehen uns als Info-Plattform für die Swingtanzszene, weniger als Werbeplattform für Kurse oder Events. Das bedeutet, dass wir nur solche Kurse und Workshops listen, die unsere Zielgruppe interessieren. Was dazugehört, haben wir in unserer Listings Policy zusammengefasst. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Unabhängigkeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir sind nicht mit Tanzschulen oder anderen Organisationen verbunden. Wir nehmen niemals Gegenleistungen an, um Organisationen oder Events zu bewerben. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h3", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Vollständigkeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir listen alle regelmäßigen Kurse und auch einmalige Workshops, egal welches Level und welcher Swingtanz. Die Daten werden von den Anbieter:innen gepflegt.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [], "direction": null}], "direction": null}}	11	de	1
 \.
 
 
@@ -1408,10 +1525,10 @@ COPY public.about_locales (title, content, id, _locale, _parent_id) FROM stdin;
 --
 
 COPY public.classes (id, title, cancelled, school_id, updated_at, created_at, address, location) FROM stdin;
-4	Solo Jazz	\N	2	2026-03-24 21:25:52.277+00	2026-03-24 17:35:05.596+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
-3	Improver	\N	1	2026-03-24 21:26:31.034+00	2026-03-24 17:16:48.907+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
-2	Intermediate	\N	1	2026-03-24 21:26:41.161+00	2026-03-24 17:16:26.976+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
-1	Beginner 1	\N	1	2026-03-24 21:26:52.811+00	2026-03-24 17:16:07.892+00	Cotton Club, 10, Alter Steinweg, Portugiesenviertel, Neustadt, Hamburg-Mitte, Hamburg, 20459, Germany	0101000020E6100000A682E563D2F6234082ECAB6175C64A40
+4	Solo Jazz	\N	2	2026-06-06 09:49:27.725+00	2026-03-24 17:35:05.596+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
+3	Improver	\N	1	2026-06-06 09:49:38.437+00	2026-03-24 17:16:48.907+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
+2	Intermediate	\N	1	2026-06-06 09:49:50.097+00	2026-03-24 17:16:26.976+00	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	0101000020E610000007A348ADE6F323404F5C8E5720C94A40
+1	Beginner 1	\N	1	2026-06-06 09:49:56.631+00	2026-03-24 17:16:07.892+00	Cotton Club, 10, Alter Steinweg, Portugiesenviertel, Neustadt, Hamburg-Mitte, Hamburg, 20459, Germany	0101000020E6100000A682E563D2F6234082ECAB6175C64A40
 \.
 
 
@@ -1420,14 +1537,14 @@ COPY public.classes (id, title, cancelled, school_id, updated_at, created_at, ad
 --
 
 COPY public.classes_locales (description, weekday, id, _locale, _parent_id) FROM stdin;
-Classic Routines	Wednesday	13	en	4
-Classic Routines	Wednesday	14	de	4
-Lindy Hop	Monday	15	en	3
-Lindy Hop	Monday	16	de	3
-Lindy Hop	Monday	17	en	2
-Lindy hop	Monday	18	de	2
-Lindy Hop	Monday	19	en	1
-Lindy Hop	Monday	20	de	1
+Classic Routines	Wednesday	21	en	4
+Classic Routines	Wednesday	22	de	4
+Lindy Hop	Monday	23	en	3
+Lindy Hop	Monday	24	de	3
+Lindy Hop	Monday	25	en	2
+Lindy hop	Monday	26	de	2
+Lindy Hop	Monday	27	en	1
+Lindy Hop	Monday	28	de	1
 \.
 
 
@@ -1435,14 +1552,20 @@ Lindy Hop	Monday	20	de	1
 -- Data for Name: classes_rels; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.classes_rels (id, "order", parent_id, path, teachers_id) FROM stdin;
-22	1	4	teachers	2
-23	1	3	teachers	3
-24	2	3	teachers	1
-25	3	3	teachers	2
-26	1	2	teachers	4
-27	2	2	teachers	5
-28	1	1	teachers	3
+COPY public.classes_rels (id, "order", parent_id, path, teachers_id, dances_id) FROM stdin;
+29	1	4	teachers	2	\N
+30	1	4	dances	\N	6
+31	1	3	teachers	3	\N
+32	2	3	teachers	1	\N
+33	3	3	teachers	2	\N
+34	1	3	dances	\N	1
+35	1	2	teachers	4	\N
+36	2	2	teachers	5	\N
+37	1	2	dances	\N	1
+38	2	2	dances	\N	2
+39	1	1	teachers	3	\N
+40	1	1	dances	\N	1
+41	2	1	dances	\N	2
 \.
 
 
@@ -1450,14 +1573,14 @@ COPY public.classes_rels (id, "order", parent_id, path, teachers_id) FROM stdin;
 -- Data for Name: dances; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.dances (id, updated_at, created_at) FROM stdin;
-1	2026-05-25 12:48:54.426+00	2026-05-25 12:48:54.425+00
-2	2026-05-25 12:49:03.825+00	2026-05-25 12:49:03.825+00
-3	2026-05-25 12:49:19.092+00	2026-05-25 12:49:19.092+00
-4	2026-05-25 12:49:32.324+00	2026-05-25 12:49:32.324+00
-5	2026-05-25 12:51:37.225+00	2026-05-25 12:51:37.225+00
-6	2026-05-25 12:54:14.45+00	2026-05-25 12:54:14.449+00
-7	2026-05-25 12:54:25.735+00	2026-05-25 12:54:25.735+00
+COPY public.dances (id, updated_at, created_at, short_name) FROM stdin;
+2	2026-06-06 09:48:54.207+00	2026-05-25 12:49:03.825+00	Charleston
+1	2026-06-06 09:48:58.815+00	2026-05-25 12:48:54.425+00	Lindy
+7	2026-06-06 14:38:59.146+00	2026-05-25 12:54:25.735+00	Blues
+6	2026-06-06 14:39:03.229+00	2026-05-25 12:54:14.449+00	Tap
+4	2026-06-06 14:39:06.904+00	2026-05-25 12:49:32.324+00	Shag
+3	2026-06-06 14:39:10.93+00	2026-05-25 12:49:19.092+00	Balboa
+5	2026-06-06 17:39:07.185+00	2026-05-25 12:51:37.225+00	Solo
 \.
 
 
@@ -1466,13 +1589,40 @@ COPY public.dances (id, updated_at, created_at) FROM stdin;
 --
 
 COPY public.dances_locales (description, id, _locale, _parent_id, name) FROM stdin;
-{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop ist heute der bekannteste Swingtanz und das, woran die meisten denken, wenn sie “Swingtanz” hören. Er entstand um 1927 in Harlem, NY in afroamerikanisch geprägten Ballrooms. Er ist sehr improvisierend, unernst und lässt beiden Tanzenden viel Freiraum. Egal ob wild oder ruhig, Social Dance zu zweit oder spektakuläre Performance, jede:r kann einen eigenen Stil finden, und Spielereien wie Stealing, Birthday Jams oder Jam Circles gehören fest dazu.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop ist damit ein guter Einstieg ins Swingtanzen. Außerdem tanzen eigentlich alle Swingtänzer:innen Lindy Hop. Wer Lindy kann, findet also immer jemanden zum Tanzen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Und alle hier vorgestellten Tanzschulen unterrichten Lindy Hop, du findest also bei allen einen guten Einstieg.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	1	de	1	Lindy Hop
-{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Charleston wird zu schneller Musik getanzt und entstand noch vor der Swingmusik. Die Haltung war anfangs an europäische Gesellschaftstänze angelehnt (20s Charleston). Mit dem Aufkommen der Swingmusik begannen einige Paare, sich beim Tanzen voneinander zu lösen (Breakaway), daraus wurde dann der Lindy Hop. Dieser spätere Charleston wird auch oft zusammen mit Lindy getanzt und vermischt.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	2	de	2	Charleston
-{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Balboa entstand in überfüllten Ballrooms auf Balboa Island vor Los Angeles zu schneller Musik. Er wird auf engem Raum getanzt und war anfänglich sehr minimalistisch (Pure-Bal), nahm später aber auch Einflüsse aus dem in L.A. getanzten Swing auf (Bal-Swing).", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	3	de	3	Balboa
-{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Collegiate Shag ist ein sehr energetischer Tanz, der durch sein federndes Footwork und die extreme Handhaltung auffällt. Wie Balboa wird Shag zu schneller Musik getanzt, bietet aber viel spektakulärere Bewegungen und sehr viel Gelegenheit zum Improvisieren.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	4	de	4	Collegiate Shag
-{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Solo Jazz (auch Authentic Jazz genannt)  wird allein getanzt. Solo kann man verschiedene Stile tanzen — meist an Charleston und Lindy Hop angelehnt, aber auch ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"id": "6a1445f9992249303eba5e9b", "type": "link", "fields": {"url": "https://www.youtube.com/watch?v=hYx86-1dOIY", "newTab": false, "linkType": "custom"}, "format": "", "indent": 0, "version": 3, "children": [{"mode": "normal", "text": "Blues", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"mode": "normal", "text": " lässt sich alleine tanzen. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	8	de	5	Authentic Jazz/Solo Jazz
-{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Tap (Stepptanz) ist als einziger Tanz in dieser Liste kein Social Dance — Tap ist eine Performance, die von den frühen Vaudeville-Shows über die ersten Musikfilme bis zu den Technicolor-Musicals sehr populär war. Tap erfordert viel Präzision und ausgezeichnetes Timing und ist daher ideal für alle, die eine besondere Herausforderung für Bühnenauftritte (oder auch nur für sich selbst) suchen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	9	de	6	Tap (Stepptanz)
-{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Obwohl Blues kein Swingtanz ist, gehört er doch fest zur Szene. Blues beschreibt eine ganze Familie von Tänzen, die sich zu verschiedenen Musik-Stilen entwickelt haben, von minimalistisch bis zu energetisch haben sie alle aber einige Gemeinsamkeiten: Es geht nicht um kompliziertes Footwork, sondern ums Improvisieren und darum, den Rhythmus und das Gefühl der Musik in den Tanz einzubringen. Beide Tanzenden bestimmen sehr gleichberechtigt, was und wie getanzt wird.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	10	de	7	Blues
+{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Charleston wird zu schneller Musik getanzt und entstand noch vor der Swingmusik. Die Haltung war anfangs an europäische Gesellschaftstänze angelehnt (20s Charleston). Mit dem Aufkommen der Swingmusik begannen einige Paare, sich beim Tanzen voneinander zu lösen (Breakaway), daraus wurde dann der Lindy Hop. Dieser spätere Charleston wird auch oft zusammen mit Lindy getanzt und vermischt.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	16	de	2	Charleston
+{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop ist heute der bekannteste Swingtanz und das, woran die meisten denken, wenn sie “Swingtanz” hören. Er entstand um 1927 in Harlem, NY in afroamerikanisch geprägten Ballrooms. Er ist sehr improvisierend, unernst und lässt beiden Tanzenden viel Freiraum. Egal ob wild oder ruhig, Social Dance zu zweit oder spektakuläre Performance, jede:r kann einen eigenen Stil finden, und Spielereien wie Stealing, Birthday Jams oder Jam Circles gehören fest dazu.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop ist damit ein guter Einstieg ins Swingtanzen. Außerdem tanzen eigentlich alle Swingtänzer:innen Lindy Hop. Wer Lindy kann, findet also immer jemanden zum Tanzen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Und alle hier vorgestellten Tanzschulen unterrichten Lindy Hop, du findest also bei allen einen guten Einstieg.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	17	de	1	Lindy Hop
+{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Obwohl Blues kein Swingtanz ist, gehört er doch fest zur Szene. Blues beschreibt eine ganze Familie von Tänzen, die sich zu verschiedenen Musik-Stilen entwickelt haben, von minimalistisch bis zu energetisch haben sie alle aber einige Gemeinsamkeiten: Es geht nicht um kompliziertes Footwork, sondern ums Improvisieren und darum, den Rhythmus und das Gefühl der Musik in den Tanz einzubringen. Beide Tanzenden bestimmen sehr gleichberechtigt, was und wie getanzt wird.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	18	de	7	Blues
+{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Tap (Stepptanz) ist als einziger Tanz in dieser Liste kein Social Dance — Tap ist eine Performance, die von den frühen Vaudeville-Shows über die ersten Musikfilme bis zu den Technicolor-Musicals sehr populär war. Tap erfordert viel Präzision und ausgezeichnetes Timing und ist daher ideal für alle, die eine besondere Herausforderung für Bühnenauftritte (oder auch nur für sich selbst) suchen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	19	de	6	Tap (Stepptanz)
+{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Collegiate Shag ist ein sehr energetischer Tanz, der durch sein federndes Footwork und die extreme Handhaltung auffällt. Wie Balboa wird Shag zu schneller Musik getanzt, bietet aber viel spektakulärere Bewegungen und sehr viel Gelegenheit zum Improvisieren.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	20	de	4	Collegiate Shag
+{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Balboa entstand in überfüllten Ballrooms auf Balboa Island vor Los Angeles zu schneller Musik. Er wird auf engem Raum getanzt und war anfänglich sehr minimalistisch (Pure-Bal), nahm später aber auch Einflüsse aus dem in L.A. getanzten Swing auf (Bal-Swing).", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	21	de	3	Balboa
+{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Solo Jazz (auch Authentic Jazz genannt)  wird allein getanzt. Solo kann man verschiedene Stile tanzen — meist an Charleston und Lindy Hop angelehnt, aber auch ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"id": "6a1445f9992249303eba5e9b", "type": "link", "fields": {"url": "https://www.youtube.com/watch?v=hYx86-1dOIY", "newTab": false, "linkType": "custom"}, "format": "", "indent": 0, "version": 3, "children": [{"mode": "normal", "text": "Blues", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"mode": "normal", "text": " lässt sich alleine tanzen. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	22	de	5	Authentic Jazz/Solo Jazz
+\.
+
+
+--
+-- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.events (id, type, title, start_date, end_date, address, price, cancelled, background_image_id, updated_at, created_at, start_time, end_time, location, location_name) FROM stdin;
+1	Workshop	Dips & Tricks	2026-06-13 12:00:00+00	\N	TangoMatrix, 13 A, Beim Schlump, Eimsbüttel, Hamburg, 20144, Germany	3550	\N	\N	2026-06-06 14:32:53.479+00	2026-06-06 10:11:18.184+00	18:00	22:00	0101000020E610000007A348ADE6F323404F5C8E5720C94A40	TangoMatrix
+\.
+
+
+--
+-- Data for Name: events_locales; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.events_locales (description, id, _locale, _parent_id) FROM stdin;
+{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "This is the dips and tricks workshop", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	4	de	1
+\.
+
+
+--
+-- Data for Name: events_rels; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.events_rels (id, "order", parent_id, path, dances_id) FROM stdin;
+4	1	1	dances	1
 \.
 
 
@@ -1516,7 +1666,6 @@ COPY public.payload_kv (id, key, data) FROM stdin;
 --
 
 COPY public.payload_locked_documents (id, global_slug, updated_at, created_at) FROM stdin;
-41	\N	2026-05-25 12:53:34.521+00	2026-05-25 12:53:34.521+00
 \.
 
 
@@ -1524,9 +1673,7 @@ COPY public.payload_locked_documents (id, global_slug, updated_at, created_at) F
 -- Data for Name: payload_locked_documents_rels; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.payload_locked_documents_rels (id, "order", parent_id, path, users_id, media_id, classes_id, schools_id, teachers_id, dances_id) FROM stdin;
-59	\N	41	document	\N	\N	\N	\N	\N	5
-60	\N	41	user	1	\N	\N	\N	\N	\N
+COPY public.payload_locked_documents_rels (id, "order", parent_id, path, users_id, media_id, classes_id, schools_id, teachers_id, dances_id, events_id) FROM stdin;
 \.
 
 
@@ -1535,7 +1682,7 @@ COPY public.payload_locked_documents_rels (id, "order", parent_id, path, users_i
 --
 
 COPY public.payload_migrations (id, name, batch, updated_at, created_at) FROM stdin;
-1	dev	-1	2026-05-25 12:45:43.911+00	2026-03-24 15:10:59.203+00
+1	dev	-1	2026-06-06 14:31:02.203+00	2026-03-24 15:10:59.203+00
 \.
 
 
@@ -1547,13 +1694,14 @@ COPY public.payload_preferences (id, key, value, updated_at, created_at) FROM st
 4	global-index	{"editViewType": "default"}	2026-03-24 15:20:24.197+00	2026-03-24 15:20:24.198+00
 6	collection-users	{"limit": 10, "editViewType": "default"}	2026-03-24 17:00:20.944+00	2026-03-24 16:56:31.097+00
 7	collection-media	{}	2026-03-24 17:01:49.883+00	2026-03-24 17:01:49.883+00
-2	collection-schools	{"editViewType": "default"}	2026-03-24 17:14:26.428+00	2026-03-24 15:11:56.175+00
 3	collection-teachers	{"limit": 10, "editViewType": "default"}	2026-03-24 17:38:54.055+00	2026-03-24 15:11:58.139+00
 1	collection-classes	{"limit": 10, "editViewType": "default"}	2026-03-24 17:42:22.153+00	2026-03-24 15:11:54.641+00
 8	global-about	{"editViewType": "default"}	2026-05-10 13:05:42.593+00	2026-05-10 13:05:42.595+00
 9	global-swing	{"editViewType": "default"}	2026-05-10 13:10:58.291+00	2026-05-10 13:10:58.293+00
 5	locale	"de"	2026-05-10 13:11:13.177+00	2026-03-24 16:31:42.432+00
 10	collection-dances	{"limit": 10, "editViewType": "default"}	2026-05-25 12:55:54.811+00	2026-05-25 12:48:13.324+00
+11	collection-events	{"limit": 10, "editViewType": "default"}	2026-06-06 10:06:24.269+00	2026-06-06 10:02:53.188+00
+2	collection-schools	{"limit": 10, "editViewType": "default"}	2026-06-06 17:52:04.013+00	2026-03-24 15:11:56.175+00
 \.
 
 
@@ -1565,13 +1713,14 @@ COPY public.payload_preferences_rels (id, "order", parent_id, path, users_id) FR
 4	\N	4	user	1
 8	\N	6	user	1
 9	\N	7	user	1
-12	\N	2	user	1
 15	\N	3	user	1
 16	\N	1	user	1
 25	\N	8	user	1
 27	\N	9	user	1
 28	\N	5	user	1
 31	\N	10	user	1
+35	\N	11	user	1
+36	\N	2	user	1
 \.
 
 
@@ -1620,29 +1769,12 @@ COPY public.swing (id, updated_at, created_at) FROM stdin;
 
 
 --
--- Data for Name: swing_dances; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.swing_dances (_order, _parent_id, id, name) FROM stdin;
-1	1	6a03891af9f97c0cc9d40f3a	Lindy Hop
-\.
-
-
---
--- Data for Name: swing_dances_locales; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.swing_dances_locales (description, id, _locale, _parent_id) FROM stdin;
-\.
-
-
---
 -- Data for Name: swing_locales; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.swing_locales (title, what_is_swing, id, _locale, _parent_id, how_to_learn) FROM stdin;
-\N	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Was ist Swingtanz?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "„Swingtanz“ ist ein weit gefasster Begriff, der nicht immer klar abgegrenzt ist. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Die weiteste Definition würde sehr unterschiedliche Tänze einschließen, von heute großteils vergessenen Tänzen, die zum frühen Ragtime-Jazz entstanden, bis hin zu Electro Swing und Western Swing, die sich sehr weit von den ursprünglichen, afroamerikanisch geprägten Wurzeln entfernt haben.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"type": "linebreak", "version": 1}, {"mode": "normal", "text": "Wir folgen hier dem Konsens der internationalen Szene, die sich um die Tänze der 20er bis 40er Jahre gebildet hat  — wir repräsentieren die Paartänze", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Um die Tänze der 20er bis 40er Jahre hat sich eine international vernetzte Szene gebildet, als deren Teil wir uns sehen — wir tanzen die Paartänze", "type": "text", "style": "", "detail": 0, "format": 4, "version": 1}], "direction": null, "textStyle": "", "textFormat": 4}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Charleston", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 3, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Balboa", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 4, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Collegiate Shag", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 5, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "St. Louis Shag", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "sowie die Solotänze", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Authentic Jazz/Solo Jazz", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Tap (Stepptanz)", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Alle diese Tänze haben einige Gemeinsamkeiten:", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sie entstanden mit und durch den Swing, also dem als Tanzmusik gespielten Jazz des frühen 20. Jahrhunderts. Die Eigenheiten der Musik finden sich in den Bewegungen der Tänze wieder.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sie haben zwar ein bestimmtes Vokabular an Moves, es gibt aber keine Organisation, die über richtig und falsch entscheidet oder vorgibt, wie genau eine Bewegung auszusehen hat.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 3, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Auch wenn es durchaus Shows und Wettkämpfe gibt, die Swingtänze sind in ihrem Wesen „Social Dances“; sie sind kein Turniersport. Es geht nicht um Wettkämpfe oder Ranglisten, sondern darum, auf der Tanzfläche Inspiration zu finden, die eigene Persönlichkeit auszudrücken und vor allem Spaß zu haben.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Und auch wenn Blues kein Jazz ist und Bluestanz kein Swingtanz im engeren Sinne, sind die Gemeinsamkeiten doch so groß, dass es keine wirkliche Trennung der Szenen und Veranstaltungen gibt. Wir listen daher selbstverständlich auch alle Blues-Angebote.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Was ist der Unterschied zwischen Lindy Hop, Swingtanz, Charleston usw.?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Alle oben genannten Tänze fallen unter den Oberbegriff „Swingtanz“. Am bekanntesten ist wahrscheinlich der Lindy Hop, den afroamerikanische Tänzer:innen im Harlem der späten 1920er Jahre erfunden haben — geprägt von der neuentstandenen Swingmusik und mit Einflüssen aus früheren Jazztänzen wie dem Charleston, aber auch von afrikanischen, karibischen und europäischen Volkstänzen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop ist heute für die meisten der Einstieg in den Swingtanz. Er ist ein guter Start, um später eventuell auch in andere Swingtänze einzusteigen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wie kann ich Swingtanz lernen?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Die Swingtanz-Szene ist sehr offen und freut sich immer über alle, die Lust haben, mitzutanzen. Tatsächlich ist der Einstieg sehr leicht, du  brauchst keine Vorkenntnisse, keine besonderen Fähigkeiten oder vorhergehende Tanzerfahrung. Du musst nicht einmal eine:n Tanzpartner:in mitbringen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sowohl im normalen Unterricht als auch auf den Parties, auf Festivals und sonstigen Veranstaltungen ist es völlig normal, dass alle mit allen tanzen. Du bist also sowohl alleine als auch als Paar jederzeit willkommen, einfach mal vorbeizuschauen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir zeigen dir alle Organisationen auf, die in Hamburg Unterricht anbieten. Am besten schaust du zuerst, welche Organisationen für dich günstig gelegene Beginner-Kurse anbieten und fragst dann dort nach, wann der nächste Einstieg möglich ist.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Blocker: Swingtanz früher und heute", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Erstes Rüberschwappen, Nazizeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Revival in Europa und Hamburg", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	6	en	1	\N
-Was ist Swingtanz?	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "„Swingtanz“ ist ein weit gefasster Begriff, der nicht immer klar abgegrenzt ist. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Die weiteste Definition würde sehr unterschiedliche Tänze einschließen, von heute großteils vergessenen Tänzen, die zum frühen Ragtime-Jazz entstanden, bis hin zu Electro Swing und Western Swing, die sich sehr weit von den ursprünglichen, afroamerikanisch geprägten Wurzeln entfernt haben.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"type": "linebreak", "version": 1}, {"mode": "normal", "text": "Wir folgen hier dem Konsens der internationalen Szene, die sich um die Tänze der 20er bis 40er Jahre gebildet hat  — wir repräsentieren die Paartänze", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Um die Tänze der 20er bis 40er Jahre hat sich eine international vernetzte Szene gebildet, als deren Teil wir uns sehen — wir tanzen die Paartänze", "type": "text", "style": "", "detail": 0, "format": 4, "version": 1}], "direction": null, "textStyle": "", "textFormat": 4}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Charleston", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 3, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Balboa", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 4, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Collegiate Shag", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 5, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "St. Louis Shag", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "sowie die Solotänze", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Authentic Jazz/Solo Jazz", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Tap (Stepptanz)", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Alle diese Tänze haben einige Gemeinsamkeiten:", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sie entstanden mit und durch den Swing, also dem als Tanzmusik gespielten Jazz des frühen 20. Jahrhunderts. Die Eigenheiten der Musik finden sich in den Bewegungen der Tänze wieder.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sie haben zwar ein bestimmtes Vokabular an Moves, es gibt aber keine Organisation, die über richtig und falsch entscheidet oder vorgibt, wie genau eine Bewegung auszusehen hat.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 3, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Auch wenn es durchaus Shows und Wettkämpfe gibt, die Swingtänze sind in ihrem Wesen „Social Dances“; sie sind kein Turniersport. Es geht nicht um Wettkämpfe oder Ranglisten, sondern darum, auf der Tanzfläche Inspiration zu finden, die eigene Persönlichkeit auszudrücken und vor allem Spaß zu haben.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Und auch wenn Blues kein Jazz ist und Bluestanz kein Swingtanz im engeren Sinne, sind die Gemeinsamkeiten doch so groß, dass es keine wirkliche Trennung der Szenen und Veranstaltungen gibt. Wir listen daher selbstverständlich auch alle Blues-Angebote.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Was ist der Unterschied zwischen Lindy Hop, Swingtanz, Charleston usw.?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Alle oben genannten Tänze fallen unter den Oberbegriff „Swingtanz“. Am bekanntesten ist wahrscheinlich der Lindy Hop, den afroamerikanische Tänzer:innen im Harlem der späten 1920er Jahre erfunden haben — geprägt von der neuentstandenen Swingmusik und mit Einflüssen aus früheren Jazztänzen wie dem Charleston, aber auch von afrikanischen, karibischen und europäischen Volkstänzen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop ist heute für die meisten der Einstieg in den Swingtanz. Er ist ein guter Start, um später eventuell auch in andere Swingtänze einzusteigen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wie kann ich Swingtanz lernen?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Die Swingtanz-Szene ist sehr offen und freut sich immer über alle, die Lust haben, mitzutanzen. Tatsächlich ist der Einstieg sehr leicht, du  brauchst keine Vorkenntnisse, keine besonderen Fähigkeiten oder vorhergehende Tanzerfahrung. Du musst nicht einmal eine:n Tanzpartner:in mitbringen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sowohl im normalen Unterricht als auch auf den Parties, auf Festivals und sonstigen Veranstaltungen ist es völlig normal, dass alle mit allen tanzen. Du bist also sowohl alleine als auch als Paar jederzeit willkommen, einfach mal vorbeizuschauen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir zeigen dir alle Organisationen auf, die in Hamburg Unterricht anbieten. Am besten schaust du zuerst, welche Organisationen für dich günstig gelegene Beginner-Kurse anbieten und fragst dann dort nach, wann der nächste Einstieg möglich ist.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Blocker: Swingtanz früher und heute", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Erstes Rüberschwappen, Nazizeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Revival in Europa und Hamburg", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	7	de	1	\N
+\N	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Was ist Swingtanz?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "„Swingtanz“ ist ein weit gefasster Begriff, der nicht immer klar abgegrenzt ist. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Die weiteste Definition würde sehr unterschiedliche Tänze einschließen, von heute großteils vergessenen Tänzen, die zum frühen Ragtime-Jazz entstanden, bis hin zu Electro Swing und Western Swing, die sich sehr weit von den ursprünglichen, afroamerikanisch geprägten Wurzeln entfernt haben.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"type": "linebreak", "version": 1}, {"mode": "normal", "text": "Wir folgen hier dem Konsens der internationalen Szene, die sich um die Tänze der 20er bis 40er Jahre gebildet hat  — wir repräsentieren die Paartänze", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Um die Tänze der 20er bis 40er Jahre hat sich eine international vernetzte Szene gebildet, als deren Teil wir uns sehen — wir tanzen die Paartänze", "type": "text", "style": "", "detail": 0, "format": 4, "version": 1}], "direction": null, "textStyle": "", "textFormat": 4}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Charleston", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 3, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Balboa", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 4, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Collegiate Shag", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 5, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "St. Louis Shag", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "sowie die Solotänze", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Authentic Jazz/Solo Jazz", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Tap (Stepptanz)", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Alle diese Tänze haben einige Gemeinsamkeiten:", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "ul", "type": "list", "start": 1, "format": "", "indent": 0, "version": 1, "children": [{"type": "listitem", "value": 1, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sie entstanden mit und durch den Swing, also dem als Tanzmusik gespielten Jazz des frühen 20. Jahrhunderts. Die Eigenheiten der Musik finden sich in den Bewegungen der Tänze wieder.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 2, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sie haben zwar ein bestimmtes Vokabular an Moves, es gibt aber keine Organisation, die über richtig und falsch entscheidet oder vorgibt, wie genau eine Bewegung auszusehen hat.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "listitem", "value": 3, "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Auch wenn es durchaus Shows und Wettkämpfe gibt, die Swingtänze sind in ihrem Wesen „Social Dances“; sie sind kein Turniersport. Es geht nicht um Wettkämpfe oder Ranglisten, sondern darum, auf der Tanzfläche Inspiration zu finden, die eigene Persönlichkeit auszudrücken und vor allem Spaß zu haben.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}], "listType": "bullet", "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Und auch wenn Blues kein Jazz ist und Bluestanz kein Swingtanz im engeren Sinne, sind die Gemeinsamkeiten doch so groß, dass es keine wirkliche Trennung der Szenen und Veranstaltungen gibt. Wir listen daher selbstverständlich auch alle Blues-Angebote.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Was ist der Unterschied zwischen Lindy Hop, Swingtanz, Charleston usw.?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Alle oben genannten Tänze fallen unter den Oberbegriff „Swingtanz“. Am bekanntesten ist wahrscheinlich der Lindy Hop, den afroamerikanische Tänzer:innen im Harlem der späten 1920er Jahre erfunden haben — geprägt von der neuentstandenen Swingmusik und mit Einflüssen aus früheren Jazztänzen wie dem Charleston, aber auch von afrikanischen, karibischen und europäischen Volkstänzen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop ist heute für die meisten der Einstieg in den Swingtanz. Er ist ein guter Start, um später eventuell auch in andere Swingtänze einzusteigen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wie kann ich Swingtanz lernen?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Die Swingtanz-Szene ist sehr offen und freut sich immer über alle, die Lust haben, mitzutanzen. Tatsächlich ist der Einstieg sehr leicht, du  brauchst keine Vorkenntnisse, keine besonderen Fähigkeiten oder vorhergehende Tanzerfahrung. Du musst nicht einmal eine:n Tanzpartner:in mitbringen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sowohl im normalen Unterricht als auch auf den Parties, auf Festivals und sonstigen Veranstaltungen ist es völlig normal, dass alle mit allen tanzen. Du bist also sowohl alleine als auch als Paar jederzeit willkommen, einfach mal vorbeizuschauen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir zeigen dir alle Organisationen auf, die in Hamburg Unterricht anbieten. Am besten schaust du zuerst, welche Organisationen für dich günstig gelegene Beginner-Kurse anbieten und fragst dann dort nach, wann der nächste Einstieg möglich ist.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Blocker: Swingtanz früher und heute", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Erstes Rüberschwappen, Nazizeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Revival in Europa und Hamburg", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	18	en	1	\N
+	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"tag": "h1", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Was ist Swingtanz?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "„Swingtanz“ ist ein weit gefasster Begriff, der nicht immer klar abgegrenzt ist. ", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Die weiteste Definition würde sehr unterschiedliche Tänze einschließen, von heute großteils vergessenen Tänzen, die zum frühen Ragtime-Jazz entstanden, bis hin zu Electro Swing und Western Swing, die sich sehr weit von den ursprünglichen, afroamerikanisch geprägten Wurzeln entfernt haben.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}, {"type": "linebreak", "version": 1}, {"mode": "normal", "text": "Wir folgen hier dem Konsens der internationalen Szene, die sich um die Tänze der 20er bis 40er Jahre gebildet hat  — wir repräsentieren die Paartänze.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Und auch wenn Blues kein Jazz ist und Bluestanz kein Swingtanz im engeren Sinne, sind die Gemeinsamkeiten doch so groß, dass es keine wirkliche Trennung der Szenen und Veranstaltungen gibt. Wir listen daher selbstverständlich auch alle Blues-Angebote.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Was ist der Unterschied zwischen Lindy Hop, Swingtanz, Charleston usw.?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Alle oben genannten Tänze fallen unter den Oberbegriff „Swingtanz“. Am bekanntesten ist wahrscheinlich der Lindy Hop, den afroamerikanische Tänzer:innen im Harlem der späten 1920er Jahre erfunden haben — geprägt von der neuentstandenen Swingmusik und mit Einflüssen aus früheren Jazztänzen wie dem Charleston, aber auch von afrikanischen, karibischen und europäischen Volkstänzen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Lindy Hop ist heute für die meisten der Einstieg in den Swingtanz. Er ist ein guter Start, um später eventuell auch in andere Swingtänze einzusteigen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}	19	de	1	{"root": {"type": "root", "format": "", "indent": 0, "version": 1, "children": [{"tag": "h1", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wie kann ich Swingtanz lernen?", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Die Swingtanz-Szene ist sehr offen und freut sich immer über alle, die Lust haben, mitzutanzen. Tatsächlich ist der Einstieg sehr leicht, du  brauchst keine Vorkenntnisse, keine besonderen Fähigkeiten oder vorhergehende Tanzerfahrung. Du musst nicht einmal eine:n Tanzpartner:in mitbringen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Sowohl im normalen Unterricht als auch auf den Parties, auf Festivals und sonstigen Veranstaltungen ist es völlig normal, dass alle mit allen tanzen. Du bist also sowohl alleine als auch als Paar jederzeit willkommen, einfach mal vorbeizuschauen.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Wir zeigen dir alle Organisationen auf, die in Hamburg Unterricht anbieten. Am besten schaust du zuerst, welche Organisationen für dich günstig gelegene Beginner-Kurse anbieten und fragst dann dort nach, wann der nächste Einstieg möglich ist.", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"tag": "h2", "type": "heading", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Blocker: Swingtanz früher und heute", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Erstes Rüberschwappen, Nazizeit", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}, {"type": "paragraph", "format": "", "indent": 0, "version": 1, "children": [{"mode": "normal", "text": "Revival in Europa und Hamburg", "type": "text", "style": "", "detail": 0, "format": 0, "version": 1}], "direction": null, "textStyle": "", "textFormat": 0}], "direction": null}}
 \.
 
 
@@ -1673,7 +1805,7 @@ COPY public.users (id, updated_at, created_at, enable_a_p_i_key, api_key, api_ke
 --
 
 COPY public.users_sessions (_order, _parent_id, id, created_at, expires_at) FROM stdin;
-1	1	a055fff0-6c59-44e5-836d-0c4fd584f222	2026-05-25 12:47:54.331+00	2026-05-25 14:47:54.331+00
+1	1	e08985de-73b2-4a63-9e2c-3e6f28bda217	2026-06-06 17:01:30.373+00	2026-06-06 19:01:30.373+00
 \.
 
 
@@ -1688,7 +1820,7 @@ SELECT pg_catalog.setval('public.about_id_seq', 1, true);
 -- Name: about_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.about_locales_id_seq', 5, true);
+SELECT pg_catalog.setval('public.about_locales_id_seq', 11, true);
 
 
 --
@@ -1702,14 +1834,14 @@ SELECT pg_catalog.setval('public.classes_id_seq', 4, true);
 -- Name: classes_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.classes_locales_id_seq', 20, true);
+SELECT pg_catalog.setval('public.classes_locales_id_seq', 28, true);
 
 
 --
 -- Name: classes_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.classes_rels_id_seq', 28, true);
+SELECT pg_catalog.setval('public.classes_rels_id_seq', 41, true);
 
 
 --
@@ -1723,7 +1855,28 @@ SELECT pg_catalog.setval('public.dances_id_seq', 7, true);
 -- Name: dances_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.dances_locales_id_seq', 10, true);
+SELECT pg_catalog.setval('public.dances_locales_id_seq', 22, true);
+
+
+--
+-- Name: events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.events_id_seq', 1, true);
+
+
+--
+-- Name: events_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.events_locales_id_seq', 4, true);
+
+
+--
+-- Name: events_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.events_rels_id_seq', 4, true);
 
 
 --
@@ -1758,14 +1911,14 @@ SELECT pg_catalog.setval('public.payload_kv_id_seq', 1, false);
 -- Name: payload_locked_documents_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_locked_documents_id_seq', 41, true);
+SELECT pg_catalog.setval('public.payload_locked_documents_id_seq', 70, true);
 
 
 --
 -- Name: payload_locked_documents_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_locked_documents_rels_id_seq', 60, true);
+SELECT pg_catalog.setval('public.payload_locked_documents_rels_id_seq', 109, true);
 
 
 --
@@ -1779,14 +1932,14 @@ SELECT pg_catalog.setval('public.payload_migrations_id_seq', 1, true);
 -- Name: payload_preferences_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_preferences_id_seq', 10, true);
+SELECT pg_catalog.setval('public.payload_preferences_id_seq', 11, true);
 
 
 --
 -- Name: payload_preferences_rels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.payload_preferences_rels_id_seq', 31, true);
+SELECT pg_catalog.setval('public.payload_preferences_rels_id_seq', 36, true);
 
 
 --
@@ -1811,13 +1964,6 @@ SELECT pg_catalog.setval('public.schools_rels_id_seq', 1, true);
 
 
 --
--- Name: swing_dances_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.swing_dances_locales_id_seq', 1, false);
-
-
---
 -- Name: swing_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1828,7 +1974,7 @@ SELECT pg_catalog.setval('public.swing_id_seq', 1, true);
 -- Name: swing_locales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.swing_locales_id_seq', 7, true);
+SELECT pg_catalog.setval('public.swing_locales_id_seq', 19, true);
 
 
 --
@@ -1899,6 +2045,30 @@ ALTER TABLE ONLY public.dances_locales
 
 ALTER TABLE ONLY public.dances
     ADD CONSTRAINT dances_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: events_locales events_locales_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events_locales
+    ADD CONSTRAINT events_locales_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events
+    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: events_rels events_rels_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events_rels
+    ADD CONSTRAINT events_rels_pkey PRIMARY KEY (id);
 
 
 --
@@ -1998,22 +2168,6 @@ ALTER TABLE ONLY public.schools_rels
 
 
 --
--- Name: swing_dances_locales swing_dances_locales_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.swing_dances_locales
-    ADD CONSTRAINT swing_dances_locales_pkey PRIMARY KEY (id);
-
-
---
--- Name: swing_dances swing_dances_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.swing_dances
-    ADD CONSTRAINT swing_dances_pkey PRIMARY KEY (id);
-
-
---
 -- Name: swing_locales swing_locales_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2072,6 +2226,13 @@ CREATE INDEX classes_created_at_idx ON public.classes USING btree (created_at);
 --
 
 CREATE UNIQUE INDEX classes_locales_locale_parent_id_unique ON public.classes_locales USING btree (_locale, _parent_id);
+
+
+--
+-- Name: classes_rels_dances_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX classes_rels_dances_id_idx ON public.classes_rels USING btree (dances_id);
 
 
 --
@@ -2138,6 +2299,62 @@ CREATE INDEX dances_updated_at_idx ON public.dances USING btree (updated_at);
 
 
 --
+-- Name: events_background_image_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX events_background_image_idx ON public.events USING btree (background_image_id);
+
+
+--
+-- Name: events_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX events_created_at_idx ON public.events USING btree (created_at);
+
+
+--
+-- Name: events_locales_locale_parent_id_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX events_locales_locale_parent_id_unique ON public.events_locales USING btree (_locale, _parent_id);
+
+
+--
+-- Name: events_rels_dances_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX events_rels_dances_id_idx ON public.events_rels USING btree (dances_id);
+
+
+--
+-- Name: events_rels_order_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX events_rels_order_idx ON public.events_rels USING btree ("order");
+
+
+--
+-- Name: events_rels_parent_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX events_rels_parent_idx ON public.events_rels USING btree (parent_id);
+
+
+--
+-- Name: events_rels_path_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX events_rels_path_idx ON public.events_rels USING btree (path);
+
+
+--
+-- Name: events_updated_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX events_updated_at_idx ON public.events USING btree (updated_at);
+
+
+--
 -- Name: index_locales_locale_parent_id_unique; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2198,6 +2415,13 @@ CREATE INDEX payload_locked_documents_rels_classes_id_idx ON public.payload_lock
 --
 
 CREATE INDEX payload_locked_documents_rels_dances_id_idx ON public.payload_locked_documents_rels USING btree (dances_id);
+
+
+--
+-- Name: payload_locked_documents_rels_events_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX payload_locked_documents_rels_events_id_idx ON public.payload_locked_documents_rels USING btree (events_id);
 
 
 --
@@ -2376,27 +2600,6 @@ CREATE INDEX schools_updated_at_idx ON public.schools USING btree (updated_at);
 
 
 --
--- Name: swing_dances_locales_locale_parent_id_unique; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX swing_dances_locales_locale_parent_id_unique ON public.swing_dances_locales USING btree (_locale, _parent_id);
-
-
---
--- Name: swing_dances_order_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX swing_dances_order_idx ON public.swing_dances USING btree (_order);
-
-
---
--- Name: swing_dances_parent_id_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX swing_dances_parent_id_idx ON public.swing_dances USING btree (_parent_id);
-
-
---
 -- Name: swing_locales_locale_parent_id_unique; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2469,6 +2672,14 @@ ALTER TABLE ONLY public.classes_locales
 
 
 --
+-- Name: classes_rels classes_rels_dances_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.classes_rels
+    ADD CONSTRAINT classes_rels_dances_fk FOREIGN KEY (dances_id) REFERENCES public.dances(id) ON DELETE CASCADE;
+
+
+--
 -- Name: classes_rels classes_rels_parent_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2501,6 +2712,38 @@ ALTER TABLE ONLY public.dances_locales
 
 
 --
+-- Name: events events_background_image_id_media_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events
+    ADD CONSTRAINT events_background_image_id_media_id_fk FOREIGN KEY (background_image_id) REFERENCES public.media(id) ON DELETE SET NULL;
+
+
+--
+-- Name: events_locales events_locales_parent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events_locales
+    ADD CONSTRAINT events_locales_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES public.events(id) ON DELETE CASCADE;
+
+
+--
+-- Name: events_rels events_rels_dances_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events_rels
+    ADD CONSTRAINT events_rels_dances_fk FOREIGN KEY (dances_id) REFERENCES public.dances(id) ON DELETE CASCADE;
+
+
+--
+-- Name: events_rels events_rels_parent_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events_rels
+    ADD CONSTRAINT events_rels_parent_fk FOREIGN KEY (parent_id) REFERENCES public.events(id) ON DELETE CASCADE;
+
+
+--
 -- Name: index_locales index_locales_parent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2522,6 +2765,14 @@ ALTER TABLE ONLY public.payload_locked_documents_rels
 
 ALTER TABLE ONLY public.payload_locked_documents_rels
     ADD CONSTRAINT payload_locked_documents_rels_dances_fk FOREIGN KEY (dances_id) REFERENCES public.dances(id) ON DELETE CASCADE;
+
+
+--
+-- Name: payload_locked_documents_rels payload_locked_documents_rels_events_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payload_locked_documents_rels
+    ADD CONSTRAINT payload_locked_documents_rels_events_fk FOREIGN KEY (events_id) REFERENCES public.events(id) ON DELETE CASCADE;
 
 
 --
@@ -2610,22 +2861,6 @@ ALTER TABLE ONLY public.schools_rels
 
 ALTER TABLE ONLY public.schools_rels
     ADD CONSTRAINT schools_rels_teachers_fk FOREIGN KEY (teachers_id) REFERENCES public.teachers(id) ON DELETE CASCADE;
-
-
---
--- Name: swing_dances_locales swing_dances_locales_parent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.swing_dances_locales
-    ADD CONSTRAINT swing_dances_locales_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES public.swing_dances(id) ON DELETE CASCADE;
-
-
---
--- Name: swing_dances swing_dances_parent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.swing_dances
-    ADD CONSTRAINT swing_dances_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES public.swing(id) ON DELETE CASCADE;
 
 
 --
