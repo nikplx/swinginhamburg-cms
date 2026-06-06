@@ -292,6 +292,7 @@ export interface Dance {
 export interface Event {
   id: number;
   type: 'Workshop' | 'Social';
+  locationName?: string | null;
   title: string;
   description?: {
     root: {
@@ -536,6 +537,7 @@ export interface DancesSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   type?: T;
+  locationName?: T;
   title?: T;
   description?: T;
   startDate?: T;

@@ -20,6 +20,11 @@ export const Events: CollectionConfig = {
       required: true,
     },
     {
+      name: 'locationName',
+      type: 'text',
+      required: false,
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,
