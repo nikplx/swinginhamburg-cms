@@ -19,6 +19,12 @@ export const Dances: CollectionConfig = {
       localized: true,
     },
     {
+      name: 'shortName',
+      type: 'text',
+      required: false,
+      localized: false,
+    },
+    {
       name: 'description',
       type: 'richText',
       required: false,

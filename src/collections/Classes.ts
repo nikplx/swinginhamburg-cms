@@ -21,7 +21,7 @@ export const Classes: CollectionConfig = {
     {
       name: 'description',
       type: 'text',
-      required: true,
+      required: false,
       localized: true,
     },
     {
@@ -49,6 +49,12 @@ export const Classes: CollectionConfig = {
       name: 'teachers',
       type: 'relationship',
       relationTo: 'teachers',
+      hasMany: true,
+    },
+    {
+      name: 'dances',
+      type: 'relationship',
+      relationTo: 'dances',
       hasMany: true,
     },
     {

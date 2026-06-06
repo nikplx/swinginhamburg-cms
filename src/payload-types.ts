@@ -73,6 +73,7 @@ export interface Config {
     schools: School;
     teachers: Teacher;
     dances: Dance;
+    events: Event;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     schools: SchoolsSelect<false> | SchoolsSelect<true>;
     teachers: TeachersSelect<false> | TeachersSelect<true>;
     dances: DancesSelect<false> | DancesSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -188,11 +190,12 @@ export interface Media {
 export interface Class {
   id: number;
   title: string;
-  description: string;
+  description?: string | null;
   weekday: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
   cancelled?: string | null;
   school: number | School;
   teachers?: (number | Teacher)[] | null;
+  dances?: (number | Dance)[] | null;
   address: string;
   /**
    * @minItems 2
@@ -263,6 +266,7 @@ export interface Teacher {
 export interface Dance {
   id: number;
   name: string;
+  shortName?: string | null;
   description?: {
     root: {
       type: string;
@@ -278,6 +282,61 @@ export interface Dance {
     };
     [k: string]: unknown;
   } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  type: 'Workshop' | 'Social';
+  title: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * The day the class/party begins.
+   */
+  startDate: string;
+  /**
+   * Optional. Enter local time (e.g., 20:30).
+   */
+  startTime?: string | null;
+  /**
+   * Optional. Only needed if it ends on a different day.
+   */
+  endDate?: string | null;
+  /**
+   * Optional. Enter local time (e.g., 03:00).
+   */
+  endTime?: string | null;
+  dances?: (number | Dance)[] | null;
+  address: string;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  location: [number, number];
+  /**
+   * Enter the price in Euros (e.g., 15.50).
+   */
+  price?: number | null;
+  cancelled?: string | null;
+  backgroundImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -328,6 +387,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'dances';
         value: number | Dance;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -426,6 +489,7 @@ export interface ClassesSelect<T extends boolean = true> {
   cancelled?: T;
   school?: T;
   teachers?: T;
+  dances?: T;
   address?: T;
   location?: T;
   updatedAt?: T;
@@ -461,7 +525,29 @@ export interface TeachersSelect<T extends boolean = true> {
  */
 export interface DancesSelect<T extends boolean = true> {
   name?: T;
+  shortName?: T;
   description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  type?: T;
+  title?: T;
+  description?: T;
+  startDate?: T;
+  startTime?: T;
+  endDate?: T;
+  endTime?: T;
+  dances?: T;
+  address?: T;
+  location?: T;
+  price?: T;
+  cancelled?: T;
+  backgroundImage?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -624,13 +710,6 @@ export interface Swing {
     };
     [k: string]: unknown;
   } | null;
-  dances?:
-    | {
-        name: string;
-        description?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   howToLearn?: {
     root: {
       type: string;
@@ -683,13 +762,6 @@ export interface AboutSelect<T extends boolean = true> {
 export interface SwingSelect<T extends boolean = true> {
   title?: T;
   whatIsSwing?: T;
-  dances?:
-    | T
-    | {
-        name?: T;
-        description?: T;
-        id?: T;
-      };
   howToLearn?: T;
   updatedAt?: T;
   createdAt?: T;

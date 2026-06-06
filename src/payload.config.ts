@@ -17,6 +17,7 @@ import { Index } from './globals/index'
 import { About } from './globals/about'
 import { Swing } from './globals/swing'
 import { Dances } from './collections/Dances'
+import { Events } from './collections/Events'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -44,11 +45,11 @@ export default buildConfig({
         code: 'de',
       },
     ],
-    defaultLocale: 'en',
+    defaultLocale: 'de',
   },
   globals: [Index,About,Swing],
   serverURL: process.env.DOMAIN || 'http://localhost:3000',
-  collections: [Users, Media, Classes, Schools, Teachers, Dances],
+  collections: [Users, Media, Classes, Schools, Teachers, Dances, Events],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
