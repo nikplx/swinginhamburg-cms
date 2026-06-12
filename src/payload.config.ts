@@ -1,5 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { EXPERIMENTAL_TableFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -16,6 +16,7 @@ import { resendAdapter } from '@payloadcms/email-resend'
 import { Index } from './globals/index'
 import { About } from './globals/about'
 import { Swing } from './globals/swing'
+import { SchoolsGlobal } from './globals/schools'
 import { Dances } from './collections/Dances'
 import { Events } from './collections/Events'
 
@@ -47,10 +48,15 @@ export default buildConfig({
     ],
     defaultLocale: 'de',
   },
-  globals: [Index,About,Swing],
+  globals: [Index,About,Swing,SchoolsGlobal],
   serverURL: process.env.DOMAIN || 'http://localhost:3000',
   collections: [Users, Media, Classes, Schools, Teachers, Dances, Events],
-  editor: lexicalEditor(),
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [
+      ...defaultFeatures,
+      EXPERIMENTAL_TableFeature(), // Enables the table tool
+    ],
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

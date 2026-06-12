@@ -1,25 +1,16 @@
+
 import { isAtLeastWriter } from '@/access'
 import { GlobalConfig } from 'payload'
 
-export const Swing: GlobalConfig = {
-  slug: 'swing',
+export const SchoolsGlobal: GlobalConfig = {
+  slug: 'schools',
   access: {
     read: () => true,
     update: isAtLeastWriter,
   },
   fields: [
     {
-      name: 'whatIsSwing',
-      type: 'richText',
-      localized: true,
-    },
-    {
       name: 'howToLearn',
-      type: 'richText',
-      localized: true,
-    },
-    {
-      name: 'faq',
       type: 'richText',
       localized: true,
     },

@@ -16,7 +16,7 @@ export const Classes: CollectionConfig = {
     {
       name: 'title',
       type: 'text',
-      required: true,
+      required: false,
     },
     {
       name: 'description',
@@ -29,12 +29,13 @@ export const Classes: CollectionConfig = {
       type: 'select',
       options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       required: true,
-      localized: true,
+      defaultValue: 'Monday'
     },
     {
       name: 'cancelled',
       type: 'text',
       required: false,
+      localized: true,
     },
     {
       name: 'school',
@@ -56,6 +57,11 @@ export const Classes: CollectionConfig = {
       type: 'relationship',
       relationTo: 'dances',
       hasMany: true,
+    },
+    {
+      name: 'locationName',
+      type: 'text',
+      required: false,
     },
     {
       name: 'address',

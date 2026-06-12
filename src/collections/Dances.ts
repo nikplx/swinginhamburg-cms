@@ -21,7 +21,7 @@ export const Dances: CollectionConfig = {
     {
       name: 'shortName',
       type: 'text',
-      required: false,
+      required: true,
       localized: false,
     },
     {

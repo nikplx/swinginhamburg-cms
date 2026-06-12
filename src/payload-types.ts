@@ -101,11 +101,13 @@ export interface Config {
     index: Index;
     about: About;
     swing: Swing;
+    schools: School;
   };
   globalsSelect: {
     index: IndexSelect<false> | IndexSelect<true>;
     about: AboutSelect<false> | AboutSelect<true>;
     swing: SwingSelect<false> | SwingSelect<true>;
+    schools: SchoolsSelect<false> | SchoolsSelect<true>;
   };
   locale: 'en' | 'de';
   widgets: {
@@ -189,13 +191,14 @@ export interface Media {
  */
 export interface Class {
   id: number;
-  title: string;
+  title?: string | null;
   description?: string | null;
   weekday: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
   cancelled?: string | null;
   school: number | School;
   teachers?: (number | Teacher)[] | null;
   dances?: (number | Dance)[] | null;
+  locationName?: string | null;
   address: string;
   /**
    * @minItems 2
@@ -266,7 +269,7 @@ export interface Teacher {
 export interface Dance {
   id: number;
   name: string;
-  shortName?: string | null;
+  shortName: string;
   description?: {
     root: {
       type: string;
@@ -292,7 +295,6 @@ export interface Dance {
 export interface Event {
   id: number;
   type: 'Workshop' | 'Social';
-  locationName?: string | null;
   title: string;
   description?: {
     root: {
@@ -326,18 +328,20 @@ export interface Event {
    */
   endTime?: string | null;
   dances?: (number | Dance)[] | null;
+  /**
+   * Enter the price in Euros (e.g., 15.50).
+   */
+  price?: number | null;
+  cancelled?: string | null;
+  url?: string | null;
+  backgroundImage?: (number | null) | Media;
+  locationName?: string | null;
   address: string;
   /**
    * @minItems 2
    * @maxItems 2
    */
   location: [number, number];
-  /**
-   * Enter the price in Euros (e.g., 15.50).
-   */
-  price?: number | null;
-  cancelled?: string | null;
-  backgroundImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -491,6 +495,7 @@ export interface ClassesSelect<T extends boolean = true> {
   school?: T;
   teachers?: T;
   dances?: T;
+  locationName?: T;
   address?: T;
   location?: T;
   updatedAt?: T;
@@ -537,7 +542,6 @@ export interface DancesSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   type?: T;
-  locationName?: T;
   title?: T;
   description?: T;
   startDate?: T;
@@ -545,11 +549,13 @@ export interface EventsSelect<T extends boolean = true> {
   endDate?: T;
   endTime?: T;
   dances?: T;
-  address?: T;
-  location?: T;
   price?: T;
   cancelled?: T;
+  url?: T;
   backgroundImage?: T;
+  locationName?: T;
+  address?: T;
+  location?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -671,7 +677,6 @@ export interface Index {
  */
 export interface About {
   id: number;
-  title?: string | null;
   content?: {
     root: {
       type: string;
@@ -696,7 +701,6 @@ export interface About {
  */
 export interface Swing {
   id: number;
-  title?: string | null;
   whatIsSwing?: {
     root: {
       type: string;
@@ -713,6 +717,21 @@ export interface Swing {
     [k: string]: unknown;
   } | null;
   howToLearn?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  faq?: {
     root: {
       type: string;
       children: {
@@ -751,7 +770,6 @@ export interface IndexSelect<T extends boolean = true> {
  * via the `definition` "about_select".
  */
 export interface AboutSelect<T extends boolean = true> {
-  title?: T;
   content?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -762,9 +780,9 @@ export interface AboutSelect<T extends boolean = true> {
  * via the `definition` "swing_select".
  */
 export interface SwingSelect<T extends boolean = true> {
-  title?: T;
   whatIsSwing?: T;
   howToLearn?: T;
+  faq?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

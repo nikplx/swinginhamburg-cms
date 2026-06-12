@@ -9,11 +9,6 @@ export const About: GlobalConfig = {
   },
   fields: [
     {
-      name: 'title',
-      type: 'text',
-      localized: true,
-    },
-    {
       name: 'content',
       type: 'richText',
       localized: true,

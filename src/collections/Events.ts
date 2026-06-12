@@ -20,11 +20,6 @@ export const Events: CollectionConfig = {
       required: true,
     },
     {
-      name: 'locationName',
-      type: 'text',
-      required: false,
-    },
-    {
       name: 'title',
       type: 'text',
       required: true,
@@ -106,26 +101,6 @@ export const Events: CollectionConfig = {
       hasMany: true,
     },
     {
-      name: 'address',
-      type: 'text',
-      required: true,
-      defaultValue: 'Hamburg',
-      // Optional: Set to true if you want to hide this field and only let the custom component manage it
-      // admin: { hidden: true }
-    },
-    {
-      name: 'location',
-      type: 'point',
-      required: true,
-      // Corrected to [Longitude, Latitude] for Hamburg
-      defaultValue: [9.993682, 53.551086],
-      admin: {
-        components: {
-          Field: '@/components/LocationSearchField',
-        },
-      },
-    },
-    {
       name: 'price',
       type: 'number',
       required: false,
@@ -159,12 +134,43 @@ export const Events: CollectionConfig = {
       name: 'cancelled',
       type: 'text',
       required: false,
+      localized: true,
+    },
+    {
+      name: 'url',
+      type: 'text',
+      required: false,
     },
     {
       name: 'backgroundImage',
       type: 'upload',
       relationTo: 'media',
       required: false,
+    },
+    {
+      name: 'locationName',
+      type: 'text',
+      required: false,
+    },
+    {
+      name: 'address',
+      type: 'text',
+      required: true,
+      defaultValue: 'Hamburg',
+      // Optional: Set to true if you want to hide this field and only let the custom component manage it
+      // admin: { hidden: true }
+    },
+    {
+      name: 'location',
+      type: 'point',
+      required: true,
+      // Corrected to [Longitude, Latitude] for Hamburg
+      defaultValue: [9.993682, 53.551086],
+      admin: {
+        components: {
+          Field: '@/components/LocationSearchField',
+        },
+      },
     },
   ],
 }
