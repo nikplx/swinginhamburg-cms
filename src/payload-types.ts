@@ -101,13 +101,13 @@ export interface Config {
     index: Index;
     about: About;
     swing: Swing;
-    schools: School;
+    'schools-global': SchoolsGlobal;
   };
   globalsSelect: {
     index: IndexSelect<false> | IndexSelect<true>;
     about: AboutSelect<false> | AboutSelect<true>;
     swing: SwingSelect<false> | SwingSelect<true>;
-    schools: SchoolsSelect<false> | SchoolsSelect<true>;
+    'schools-global': SchoolsGlobalSelect<false> | SchoolsGlobalSelect<true>;
   };
   locale: 'en' | 'de';
   widgets: {
@@ -751,6 +751,30 @@ export interface Swing {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "schools-global".
+ */
+export interface SchoolsGlobal {
+  id: number;
+  howToLearn?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "index_select".
  */
 export interface IndexSelect<T extends boolean = true> {
@@ -783,6 +807,16 @@ export interface SwingSelect<T extends boolean = true> {
   whatIsSwing?: T;
   howToLearn?: T;
   faq?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "schools-global_select".
+ */
+export interface SchoolsGlobalSelect<T extends boolean = true> {
+  howToLearn?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

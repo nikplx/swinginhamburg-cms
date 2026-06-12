@@ -23,6 +23,7 @@ export const Dances: CollectionConfig = {
       type: 'text',
       required: true,
       localized: false,
+      defaultValue: '',
     },
     {
       name: 'description',

@@ -3,7 +3,7 @@ import { isAtLeastWriter } from '@/access'
 import { GlobalConfig } from 'payload'
 
 export const SchoolsGlobal: GlobalConfig = {
-  slug: 'schools',
+  slug: 'schools-global',
   access: {
     read: () => true,
     update: isAtLeastWriter,
