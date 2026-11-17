@@ -1,5 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { EXPERIMENTAL_TableFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
+import { de } from '@payloadcms/translations/languages/de'
+import { en } from '@payloadcms/translations/languages/en'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -8,17 +10,16 @@ import { migrations } from './migrations'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-import { Classes } from './collections/Classes'
-import { Schools } from './collections/Schools'
 import { Teachers } from './collections/Teachers'
-import { integer, pgTable, varchar } from '@payloadcms/db-postgres/drizzle/pg-core'
+import { Dances } from './collections/Dances'
+import { Events } from './collections/Events'
+import { Organizations } from './collections/Organizations'
 import { resendAdapter } from '@payloadcms/email-resend'
 import { Index } from './globals/index'
 import { About } from './globals/about'
 import { Swing } from './globals/swing'
 import { SchoolsGlobal } from './globals/schools'
-import { Dances } from './collections/Dances'
-import { Events } from './collections/Events'
+import { occurrencesEndpoint } from './endpoints/occurrences'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -29,6 +30,14 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+  },
+  // The admin must be usable in German; German is also the fallback for
+  // browsers whose language is not configured.
+  i18n: {
+    fallbackLanguage: 'de',
+    // payload@3.93 vs @payloadcms/translations@3.79: a few newer keys are typed
+    // as required. The shipped German translations are complete for this app.
+    supportedLanguages: { de: de as any, en: en as any },
   },
   email: process.env.RESEND_API_KEY ? resendAdapter({
     defaultFromAddress: 'swinginhamburg@eins9und30.de',
@@ -50,7 +59,7 @@ export default buildConfig({
   },
   globals: [Index,About,Swing,SchoolsGlobal],
   serverURL: process.env.DOMAIN || 'http://localhost:3000',
-  collections: [Users, Media, Classes, Schools, Teachers, Dances, Events],
+  collections: [Users, Media, Teachers, Dances, Events, Organizations],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,
@@ -62,6 +71,7 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   endpoints: [
+    occurrencesEndpoint,
     {
       path: '/health',
       method: 'get',
@@ -76,6 +86,10 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    // The database uses PostGIS (older migrations created geometry columns).
+    // Declaring the extension keeps `push` from trying to drop system tables
+    // such as `spatial_ref_sys` now that no Payload field uses geometry.
+    extensions: ['postgis'],
     push: process.env.NODE_ENV === 'development',
     prodMigrations: migrations,
   }),

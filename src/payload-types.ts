@@ -69,11 +69,10 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    classes: Class;
-    schools: School;
     teachers: Teacher;
     dances: Dance;
     events: Event;
+    organizations: Organization;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -83,11 +82,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    classes: ClassesSelect<false> | ClassesSelect<true>;
-    schools: SchoolsSelect<false> | SchoolsSelect<true>;
     teachers: TeachersSelect<false> | TeachersSelect<true>;
     dances: DancesSelect<false> | DancesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -187,57 +185,6 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "classes".
- */
-export interface Class {
-  id: number;
-  title?: string | null;
-  description?: string | null;
-  weekday: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
-  cancelled?: string | null;
-  school: number | School;
-  teachers?: (number | Teacher)[] | null;
-  dances?: (number | Dance)[] | null;
-  locationName?: string | null;
-  address: string;
-  /**
-   * @minItems 2
-   * @maxItems 2
-   */
-  location: [number, number];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "schools".
- */
-export interface School {
-  id: number;
-  name: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  website?: string | null;
-  teachers?: (number | Teacher)[] | null;
-  owner?: (number | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "teachers".
  */
 export interface Teacher {
@@ -269,7 +216,11 @@ export interface Teacher {
 export interface Dance {
   id: number;
   name: string;
+  /**
+   * Used for filters and anchors, e.g. "Lindy Hop".
+   */
   shortName: string;
+  slug: string;
   description?: {
     root: {
       type: string;
@@ -294,8 +245,8 @@ export interface Dance {
  */
 export interface Event {
   id: number;
-  type: 'Workshop' | 'Social';
   title: string;
+  type: 'class' | 'social' | 'workshop' | 'talk' | 'walk' | 'festival' | 'other';
   description?: {
     root: {
       type: string;
@@ -312,36 +263,134 @@ export interface Event {
     [k: string]: unknown;
   } | null;
   /**
-   * The day the class/party begins.
+   * Select more than one for co-hosted events.
    */
-  startDate: string;
+  organizers: (number | Organization)[];
+  danceStyles?: (number | Dance)[] | null;
+  level?: ('all' | 'beginner' | 'intermediate' | 'advanced' | 'open') | null;
+  location?: {
+    name?: string | null;
+    address?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    directionsNote?: string | null;
+  };
+  schedule: (
+    | {
+        date: string;
+        startTime?: string | null;
+        endTime?: string | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'once';
+      }
+    | {
+        dates: {
+          date: string;
+          startTime?: string | null;
+          endTime?: string | null;
+          id?: string | null;
+        }[];
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'dates';
+      }
+    | {
+        frequency: 'weekly' | 'monthly';
+        /**
+         * Every N weeks or months (1 = every week / month).
+         */
+        interval?: number | null;
+        weekdays?: ('MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU')[] | null;
+        monthlyMode?: ('dayOfMonth' | 'nthWeekday') | null;
+        dayOfMonth?: number | null;
+        nthWeekday?: ('1' | '2' | '3' | '4' | '-1') | null;
+        weekday?: ('MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU') | null;
+        startDate: string;
+        startTime?: string | null;
+        endTime?: string | null;
+        endMode: 'never' | 'until' | 'count';
+        until?: string | null;
+        count?: number | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'recurring';
+      }
+    | {
+        startDate: string;
+        weekday: 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
+        startTime?: string | null;
+        endTime?: string | null;
+        sessions: number;
+        /**
+         * Skipped dates do not reduce the session count.
+         */
+        skipDates?:
+          | {
+              date: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'course';
+      }
+  )[];
   /**
-   * Optional. Enter local time (e.g., 20:30).
+   * Maintained by the preview: keyed by local date (YYYY-MM-DD).
    */
-  startTime?: string | null;
+  exceptions?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
-   * Optional. Only needed if it ends on a different day.
+   * Derived, do not edit.
    */
-  endDate?: string | null;
+  firstDate?: string | null;
   /**
-   * Optional. Enter local time (e.g., 03:00).
+   * Empty for open-ended series.
    */
-  endTime?: string | null;
-  dances?: (number | Dance)[] | null;
+  lastDate?: string | null;
   /**
-   * Enter the price in Euros (e.g., 15.50).
+   * For open-ended series: when the organizer last checked the schedule.
    */
-  price?: number | null;
-  cancelled?: string | null;
-  url?: string | null;
-  backgroundImage?: (number | null) | Media;
-  locationName?: string | null;
-  address: string;
+  lastConfirmed?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  name: string;
   /**
-   * @minItems 2
-   * @maxItems 2
+   * Short name used in links, e.g. "swing-in-hamburg".
    */
-  location: [number, number];
+  slug: string;
+  kind: 'school' | 'association' | 'individual' | 'other';
+  description?: string | null;
+  links?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  defaultLocation?: {
+    name?: string | null;
+    address?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    directionsNote?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -378,14 +427,6 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'classes';
-        value: number | Class;
-      } | null)
-    | ({
-        relationTo: 'schools';
-        value: number | School;
-      } | null)
-    | ({
         relationTo: 'teachers';
         value: number | Teacher;
       } | null)
@@ -396,6 +437,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'events';
         value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'organizations';
+        value: number | Organization;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -485,37 +530,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "classes_select".
- */
-export interface ClassesSelect<T extends boolean = true> {
-  title?: T;
-  description?: T;
-  weekday?: T;
-  cancelled?: T;
-  school?: T;
-  teachers?: T;
-  dances?: T;
-  locationName?: T;
-  address?: T;
-  location?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "schools_select".
- */
-export interface SchoolsSelect<T extends boolean = true> {
-  name?: T;
-  description?: T;
-  website?: T;
-  teachers?: T;
-  owner?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "teachers_select".
  */
 export interface TeachersSelect<T extends boolean = true> {
@@ -532,6 +546,7 @@ export interface TeachersSelect<T extends boolean = true> {
 export interface DancesSelect<T extends boolean = true> {
   name?: T;
   shortName?: T;
+  slug?: T;
   description?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -541,21 +556,117 @@ export interface DancesSelect<T extends boolean = true> {
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
-  type?: T;
   title?: T;
+  type?: T;
   description?: T;
-  startDate?: T;
-  startTime?: T;
-  endDate?: T;
-  endTime?: T;
-  dances?: T;
-  price?: T;
-  cancelled?: T;
-  url?: T;
-  backgroundImage?: T;
-  locationName?: T;
-  address?: T;
-  location?: T;
+  organizers?: T;
+  danceStyles?: T;
+  level?: T;
+  location?:
+    | T
+    | {
+        name?: T;
+        address?: T;
+        lat?: T;
+        lng?: T;
+        directionsNote?: T;
+      };
+  schedule?:
+    | T
+    | {
+        once?:
+          | T
+          | {
+              date?: T;
+              startTime?: T;
+              endTime?: T;
+              id?: T;
+              blockName?: T;
+            };
+        dates?:
+          | T
+          | {
+              dates?:
+                | T
+                | {
+                    date?: T;
+                    startTime?: T;
+                    endTime?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        recurring?:
+          | T
+          | {
+              frequency?: T;
+              interval?: T;
+              weekdays?: T;
+              monthlyMode?: T;
+              dayOfMonth?: T;
+              nthWeekday?: T;
+              weekday?: T;
+              startDate?: T;
+              startTime?: T;
+              endTime?: T;
+              endMode?: T;
+              until?: T;
+              count?: T;
+              id?: T;
+              blockName?: T;
+            };
+        course?:
+          | T
+          | {
+              startDate?: T;
+              weekday?: T;
+              startTime?: T;
+              endTime?: T;
+              sessions?: T;
+              skipDates?:
+                | T
+                | {
+                    date?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  exceptions?: T;
+  firstDate?: T;
+  lastDate?: T;
+  lastConfirmed?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations_select".
+ */
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  kind?: T;
+  description?: T;
+  links?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  defaultLocation?:
+    | T
+    | {
+        name?: T;
+        address?: T;
+        lat?: T;
+        lng?: T;
+        directionsNote?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

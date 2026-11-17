@@ -13,7 +13,8 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "test": "pnpm run test:int && pnpm run test:e2e",
+    "test": "pnpm run test:unit && pnpm run test:int && pnpm run test:e2e",
+    "test:unit": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/unit",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "db:dump": "docker exec postgresdb pg_dump -U postgres -d postgres --clean --if-exists > db-fixture.sql",
@@ -34,6 +35,7 @@
     "payload": "3.79.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "rrule": "^2.8.1",
     "sharp": "0.34.2"
   },
   "devDependencies": {

@@ -24,90 +24,31 @@ export const canReadUser: Access = ({ req: { user } }) => {
   return false
 }
 
-export const isOwnerOrStaff: Access = ({ req: { user } }) => {
-  if (!user) return false
+// ---------------------------------------------------------------------------
+// Events / organizations / dance styles
+//
+// Deliberately minimal and kept together so finer-grained, per-organization
+// permissions can replace these in one place later.
+// ---------------------------------------------------------------------------
 
-  if (user.role === 'admin' || user.role === 'writer') return true
+/** Any logged-in admin user may create, update or delete. */
+export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
-  return {
-    owner: {
-      equals: user.id,
-    },
-  }
+/** Organizations and dance styles are public reference data. */
+export const publicRead: Access = () => true
+
+/**
+ * Anonymous visitors only ever see published events. Drafts stay private even
+ * though their `_status` may be set on the document.
+ */
+export const publishedOrAuthenticated: Access = ({ req: { user } }) => {
+  if (user) return true
+  return { _status: { equals: 'published' } }
 }
 
-export const canCreateClass: Access = async ({ req, data }) => {
-  const user = req.user
-  if (!user) return false
-
-  // Admins and Writers can create classes for any school
-  if (user.role === 'admin' || user.role === 'writer') return true
-  if (user.role !== 'school') return false
-
-  const schoolId = data?.school
-
-  // === THE NEW FIX ===
-  // If no school is provided yet (e.g., loading the form or evaluating UI access),
-  // allow it to pass. Payload's schema validation will prevent actual database 
-  // inserts if the user leaves the required 'school' field blank.
-  if (!schoolId) return true 
-
-  // If a school IS provided, verify they own it before allowing the save
-  try {
-    const school = await req.payload.findByID({
-      collection: 'schools',
-      id: schoolId,
-      depth: 0,
-    })
-
-    const ownerId = typeof school.owner === 'object' ? school.owner?.id : school.owner
-    return ownerId === user.id
-  } catch (error) {
-    return false
-  }
-}
-
-// 2. Check if the user can UPDATE, DELETE, or READ their own classes
-export const canManageClass: Access = async ({ req }) => {
-  const user = req.user
-  if (!user) return false
-
-  // Admins and Writers have unrestricted access
-  if (user.role === 'admin' || user.role === 'writer') return true
-  if (user.role !== 'school') return false
-
-  // Find all schools owned by this specific user
-  const ownedSchools = await req.payload.find({
-    collection: 'schools',
-    req,
-    where: {
-      owner: {
-        equals: user.id,
-      },
-    },
-    depth: 0,
-    pagination: false, // Ensure we get ALL their schools, not just the first 10
-  })
-
-  // Extract just the IDs
-  const schoolIds = ownedSchools.docs.map((doc) => doc.id)
-
-  // If they own no schools, they can manage no classes
-  if (schoolIds.length === 0) return false
-
-  // Return a query constraint: The class's 'school' field MUST be in their list of owned schools
-  return {
-    school: {
-      in: schoolIds,
-    },
-  }
-}
-
-export const isOwnerOrStaffField: FieldAccess = ({ req: { user }, doc }) => {
-  if (user?.role === 'admin' || user?.role === 'writer') return true
-
-  return doc?.owner === user?.id || (typeof doc?.owner === 'object' && doc.owner?.id === user?.id)
-}
+// ---------------------------------------------------------------------------
+// Legacy helpers still used by users/media
+// ---------------------------------------------------------------------------
 
 // Usage in Collections
 export const isAdmin = grantIf<Access>('admin')
