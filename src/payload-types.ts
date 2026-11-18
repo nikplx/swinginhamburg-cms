@@ -69,7 +69,6 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    teachers: Teacher;
     dances: Dance;
     events: Event;
     organizations: Organization;
@@ -78,11 +77,14 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    users: {
+      organizations: 'organizations';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    teachers: TeachersSelect<false> | TeachersSelect<true>;
     dances: DancesSelect<false> | DancesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
@@ -142,6 +144,14 @@ export interface UserAuthOperations {
 export interface User {
   id: number;
   role: 'system' | 'admin' | 'writer' | 'school' | 'guest';
+  /**
+   * Organizations whose description this user may edit.
+   */
+  organizations?: {
+    docs?: (number | Organization)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -166,6 +176,43 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  name: string;
+  /**
+   * Short name used in links, e.g. "swing-in-hamburg".
+   */
+  slug: string;
+  kind: 'school' | 'association' | 'individual' | 'other';
+  description?: string | null;
+  /**
+   * These users may edit the organization description. Linking is optional and managed by writers.
+   */
+  members?: (number | User)[] | null;
+  links?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  defaultLocation?: {
+    /**
+     * Set via the address search above.
+     */
+    address?: string | null;
+    name?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    directionsNote?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
@@ -182,32 +229,6 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "teachers".
- */
-export interface Teacher {
-  id: number;
-  name: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  email?: string | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -269,8 +290,11 @@ export interface Event {
   danceStyles?: (number | Dance)[] | null;
   level?: ('all' | 'beginner' | 'intermediate' | 'advanced' | 'open') | null;
   location?: {
-    name?: string | null;
+    /**
+     * Set via the address search above.
+     */
     address?: string | null;
+    name?: string | null;
     lat?: number | null;
     lng?: number | null;
     directionsNote?: string | null;
@@ -366,36 +390,6 @@ export interface Event {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations".
- */
-export interface Organization {
-  id: number;
-  name: string;
-  /**
-   * Short name used in links, e.g. "swing-in-hamburg".
-   */
-  slug: string;
-  kind: 'school' | 'association' | 'individual' | 'other';
-  description?: string | null;
-  links?:
-    | {
-        label: string;
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
-  defaultLocation?: {
-    name?: string | null;
-    address?: string | null;
-    lat?: number | null;
-    lng?: number | null;
-    directionsNote?: string | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -425,10 +419,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
-      } | null)
-    | ({
-        relationTo: 'teachers';
-        value: number | Teacher;
       } | null)
     | ({
         relationTo: 'dances';
@@ -490,6 +480,7 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   role?: T;
+  organizations?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
@@ -530,17 +521,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "teachers_select".
- */
-export interface TeachersSelect<T extends boolean = true> {
-  name?: T;
-  description?: T;
-  email?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dances_select".
  */
 export interface DancesSelect<T extends boolean = true> {
@@ -565,8 +545,8 @@ export interface EventsSelect<T extends boolean = true> {
   location?:
     | T
     | {
-        name?: T;
         address?: T;
+        name?: T;
         lat?: T;
         lng?: T;
         directionsNote?: T;
@@ -651,6 +631,7 @@ export interface OrganizationsSelect<T extends boolean = true> {
   slug?: T;
   kind?: T;
   description?: T;
+  members?: T;
   links?:
     | T
     | {
@@ -661,8 +642,8 @@ export interface OrganizationsSelect<T extends boolean = true> {
   defaultLocation?:
     | T
     | {
-        name?: T;
         address?: T;
+        name?: T;
         lat?: T;
         lng?: T;
         directionsNote?: T;

@@ -10,7 +10,6 @@ import { migrations } from './migrations'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-import { Teachers } from './collections/Teachers'
 import { Dances } from './collections/Dances'
 import { Events } from './collections/Events'
 import { Organizations } from './collections/Organizations'
@@ -59,7 +58,7 @@ export default buildConfig({
   },
   globals: [Index,About,Swing,SchoolsGlobal],
   serverURL: process.env.DOMAIN || 'http://localhost:3000',
-  collections: [Users, Media, Teachers, Dances, Events, Organizations],
+  collections: [Users, Media, Dances, Events, Organizations],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,
@@ -90,7 +89,9 @@ export default buildConfig({
     // Declaring the extension keeps `push` from trying to drop system tables
     // such as `spatial_ref_sys` now that no Payload field uses geometry.
     extensions: ['postgis'],
-    push: process.env.NODE_ENV === 'development',
+    // Migrations are the source of truth. Dynamic dev push would add a `dev`
+    // row to payload_migrations and make later `payload migrate` runs prompt.
+    push: false,
     prodMigrations: migrations,
   }),
   sharp,

@@ -71,12 +71,12 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
   return (
     <div className="location-picker">
       <TextInput
-        description="Adresse eingeben und Enter drücken. Der erste Treffer wird übernommen, weitere Treffer erscheinen darunter."
+        description="Adresse eingeben, Enter drücken und einen Treffer auswählen. Nur so werden die Karten-Koordinaten gesetzt."
         label="Adresse suchen"
         path={`${basePath}.geocode`}
         placeholder={address || 'Straße, PLZ Hamburg'}
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => setQuery(event.target.value)}
         onKeyDown={search}
       />
 

@@ -1,4 +1,4 @@
-import { isAtLeastWriter } from '@/access'
+import { hiddenForLowerRoles, isAtLeastWriter } from '@/access'
 import { GlobalConfig } from 'payload'
 
 export const About: GlobalConfig = {
@@ -6,6 +6,9 @@ export const About: GlobalConfig = {
   access: {
     read: () => true,
     update: isAtLeastWriter,
+  },
+  admin: {
+    hidden: hiddenForLowerRoles,
   },
   fields: [
     {

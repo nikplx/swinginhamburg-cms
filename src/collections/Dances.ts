@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated, publicRead } from '@/access'
+import { authenticated, hiddenForLowerRoles, publicRead } from '@/access'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
 
 /**
@@ -19,6 +19,7 @@ export const Dances: CollectionConfig = {
     delete: authenticated,
   },
   admin: {
+    hidden: hiddenForLowerRoles,
     useAsTitle: 'name',
     group: { de: 'Veranstaltungen', en: 'Events' },
     defaultColumns: ['name', 'shortName', 'slug'],

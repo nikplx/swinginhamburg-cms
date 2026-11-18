@@ -68,10 +68,10 @@
 
   .schedule-preview__item {
     display: grid;
-    grid-template-columns: 8.5rem minmax(0, 1fr) auto;
-    gap: 0.75rem;
+    grid-template-columns: 10rem minmax(0, 1fr) auto;
+    gap: 1rem;
     align-items: center;
-    padding: 0.6rem 0;
+    padding: 0.75rem 0;
     border-bottom: 1px solid var(--theme-elevation-100);
 
     &:last-child {
@@ -86,8 +86,10 @@
 
   .schedule-preview__date {
     font-variant-numeric: tabular-nums;
-    font-size: 0.85rem;
-    color: var(--theme-elevation-800);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--theme-text);
+    align-self: center;
   }
 
   .schedule-preview__details {
@@ -95,6 +97,7 @@
     flex-direction: column;
     gap: 0.5rem;
     min-width: 0;
+    align-self: center;
   }
 
   .schedule-preview__summary {
@@ -102,11 +105,18 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
+    font-size: 1rem;
+    font-weight: 600;
+
+    .schedule-preview__note,
+    .pill {
+      font-weight: 400;
+    }
   }
 
   .schedule-preview__note {
     color: var(--theme-elevation-600);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   .schedule-preview__editor {
@@ -125,5 +135,6 @@
     flex-wrap: wrap;
     gap: 0.25rem;
     justify-content: flex-end;
+    align-self: center;
   }
 }

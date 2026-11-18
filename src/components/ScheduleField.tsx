@@ -13,8 +13,12 @@ import {
   SelectInput,
   TextInput,
   fieldBaseClass,
+  useDocumentInfo,
   useField,
+  useForm,
+  useFormFields,
 } from '@payloadcms/ui'
+import { reduceFieldsToValues } from 'payload/shared'
 import './ScheduleField.scss'
 
 import { expand } from '@/lib/occurrences/expand'
@@ -30,7 +34,6 @@ import {
   type OnceBlock,
   type RecurringBlock,
   type ScheduleBlock,
-  type ScheduleValue,
   type WeekdayCode,
 } from '@/lib/occurrences'
 
@@ -100,6 +103,13 @@ const timeToDate = (value: null | string | undefined): Date | undefined => {
 
 const dateToTime = (date: Date): string => `${pad2(date.getHours())}:${pad2(date.getMinutes())}`
 
+const dayToDate = (value: null | string | undefined): Date | undefined => {
+  const dateOnly = toLocalDateValue(value)
+  if (!dateOnly) return undefined
+  const [year, month, day] = dateOnly.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
 const monthToDate = (value: null | string | undefined): Date | undefined => {
   if (!value) return undefined
   const [year, month] = value.split('-').map(Number)
@@ -138,6 +148,12 @@ const formatOccurrence = (occurrence: Occurrence) => {
   return { day, time, end }
 }
 
+const DISPLAY_FORMATS: Record<DateAppearance, string> = {
+  dayOnly: 'dd.MM.yyyy',
+  monthOnly: 'MM.yyyy',
+  timeOnly: 'HH:mm',
+}
+
 function DateControl({
   appearance = 'dayOnly',
   label,
@@ -160,7 +176,7 @@ function DateControl({
       ? timeToDate(value)
       : appearance === 'monthOnly'
         ? monthToDate(value)
-        : value || undefined
+        : dayToDate(value)
 
   return (
     <div className={`${fieldBaseClass} date-time`}>
@@ -168,6 +184,7 @@ function DateControl({
       <div className={`${fieldBaseClass}__wrap`}>
         <DatePicker
           pickerAppearance={appearance}
+          displayFormat={DISPLAY_FORMATS[appearance]}
           placeholder={placeholder}
           readOnly={readOnly}
           timeIntervals={15}
@@ -207,7 +224,7 @@ function NumberControl({
       path={path}
       readOnly={readOnly}
       value={value === null || value === undefined ? '' : String(value)}
-      onChange={(event) => {
+      onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         const next = Number(event.target.value)
         if (!Number.isFinite(next)) return
         onChange(Math.min(max ?? Number.POSITIVE_INFINITY, Math.max(min, next)))
@@ -250,19 +267,47 @@ function SelectControl({
 }
 
 export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
-  const { value, setValue } = useField<ScheduleValue>({ path })
   const { value: exceptionValue, setValue: setExceptions } = useField<ExceptionsMap>({
     path: 'exceptions',
   })
+  const { dispatchFields } = useForm()
+  const formFields = useFormFields(([fields]) => fields)
+  const { data: documentData } = useDocumentInfo()
 
-  const blocks = Array.isArray(value) ? value : []
-  const stored = blocks[0]
-  const block: ScheduleBlock = stored ?? {
-    blockType: 'once',
-    date: todayLocal(),
-    startTime: '20:00',
-    endTime: '22:00',
-  }
+  // A blocks field stores its rows in flattened form state: the parent holds a
+  // row count (`disableFormData`), while the real data lives at `path.0.*`.
+  // Reading or writing the parent value directly would be overwritten by the
+  // next form-state merge, so this editor works on the row's leaf fields.
+  const rowPath = `${path}.0`
+  const rowExists = ((formFields?.[path]?.rows as unknown[] | undefined) ?? []).length > 0
+
+  const savedBlock = useMemo<ScheduleBlock | undefined>(() => {
+    const stored = (documentData as Record<string, unknown> | undefined)?.[path]
+    const first = Array.isArray(stored) ? stored[0] : stored
+    return first && typeof first === 'object' ? (first as ScheduleBlock) : undefined
+  }, [documentData, path])
+
+  const editedBlock = useMemo<ScheduleBlock | undefined>(() => {
+    const reduced = reduceFieldsToValues(formFields, true) as Record<string, unknown> | undefined
+    const stored = reduced?.[path]
+    const first = Array.isArray(stored) ? stored[0] : stored
+    if (!first || typeof first !== 'object') return undefined
+    return typeof (first as { blockType?: unknown }).blockType === 'string'
+      ? (first as ScheduleBlock)
+      : undefined
+  }, [formFields, path])
+
+  const fallbackBlock = useMemo<ScheduleBlock>(
+    () => ({
+      blockType: 'once',
+      date: todayLocal(),
+      startTime: '20:00',
+      endTime: '22:00',
+    }),
+    [],
+  )
+
+  const block: ScheduleBlock = editedBlock ?? savedBlock ?? fallbackBlock
   const exceptions: ExceptionsMap =
     exceptionValue && typeof exceptionValue === 'object' ? exceptionValue : {}
 
@@ -297,8 +342,28 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
 
   const write = (next: ScheduleBlock) => {
     if (readOnly) return
-    const withId = stored && 'id' in stored ? { ...next, id: (stored as any).id } : next
-    setValue([withId] as ScheduleValue)
+    const { id: _rowID, ...values } = next as ScheduleBlock & { id?: string }
+
+    // Make sure the row itself exists (minRows: 1 on a fresh document).
+    if (!rowExists) {
+      dispatchFields({
+        type: 'ADD_ROW',
+        blockType: next.blockType,
+        path,
+        rowIndex: 0,
+      })
+    }
+
+    // Drop leaves that belonged to a previously selected block type so a
+    // switched block does not submit stale fields.
+    for (const key of Object.keys(block)) {
+      if (key === 'id' || key === 'blockType' || key in values) continue
+      dispatchFields({ type: 'REMOVE', path: `${rowPath}.${key}` })
+    }
+
+    for (const [key, value] of Object.entries(values)) {
+      dispatchFields({ type: 'UPDATE', path: `${rowPath}.${key}`, value })
+    }
   }
 
   const patch = (changes: Partial<ScheduleBlock>) =>
@@ -728,7 +793,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
   return (
     <div className="schedule-field">
       {lostKeys.length > 0 && (
-        <Banner type="warning">
+        <Banner type="info">
           {lostKeys.length}{' '}
           {lostKeys.length === 1 ? 'Hinweis passt' : 'Hinweise passen'} nicht mehr zum neuen
           Zeitplan und {lostKeys.length === 1 ? 'wird' : 'werden'} beim Speichern entfernt:{' '}
@@ -858,7 +923,9 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                           path={`${path}.exceptions.${occurrence.date}.note`}
                           placeholder="Notiz"
                           value={draftNote}
-                          onChange={(event) => setDraftNote(event.target.value)}
+                          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                            setDraftNote(event.target.value)
+                          }
                         />
                         <Button
                           buttonStyle="primary"

@@ -1,4 +1,4 @@
-import { canReadUser, isAdmin, isAdminField, isAtLeastWriter } from '@/access'
+import { canReadUser, hiddenForLowerRoles, isAdmin, isAdminField } from '@/access'
 import type { CollectionConfig } from 'payload'
 
 export const Users: CollectionConfig = {
@@ -10,6 +10,7 @@ export const Users: CollectionConfig = {
     delete: isAdmin,
   },
   admin: {
+    hidden: hiddenForLowerRoles,
     useAsTitle: 'email',
   },
   auth: {
@@ -66,6 +67,20 @@ export const Users: CollectionConfig = {
       options: ['system', 'admin', 'writer', 'school', 'guest'],
       access: {
         update: isAdminField,
+      },
+    },
+    {
+      name: 'organizations',
+      type: 'join',
+      collection: 'organizations',
+      on: 'members',
+      label: { de: 'Organisationen', en: 'Organizations' },
+      admin: {
+        defaultColumns: ['name', 'kind'],
+        description: {
+          de: 'Organisationen, deren Beschreibung dieser Benutzer bearbeiten darf.',
+          en: 'Organizations whose description this user may edit.',
+        },
       },
     },
   ],

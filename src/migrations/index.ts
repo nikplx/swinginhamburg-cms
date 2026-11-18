@@ -8,6 +8,8 @@ import * as migration_20260525_125629 from './20260525_125629';
 import * as migration_20260606_175302 from './20260606_175302';
 import * as migration_20260612_220819 from './20260612_220819';
 import * as migration_20261117_224917_unified_events from './20261117_224917_unified_events';
+import * as migration_20261118_124847_remove_teachers from './20261118_124847_remove_teachers';
+import * as migration_20261118_161637_organization_members from './20261118_161637_organization_members';
 
 export const migrations = [
   {
@@ -58,6 +60,16 @@ export const migrations = [
   {
     up: migration_20261117_224917_unified_events.up,
     down: migration_20261117_224917_unified_events.down,
-    name: '20261117_224917_unified_events'
+    name: '20261117_224917_unified_events',
+  },
+  {
+    up: migration_20261118_124847_remove_teachers.up,
+    down: migration_20261118_124847_remove_teachers.down,
+    name: '20261118_124847_remove_teachers',
+  },
+  {
+    up: migration_20261118_161637_organization_members.up,
+    down: migration_20261118_161637_organization_members.down,
+    name: '20261118_161637_organization_members'
   },
 ];

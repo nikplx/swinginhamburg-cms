@@ -1,4 +1,4 @@
-import { isAtLeastWriter } from '@/access'
+import { hiddenForLowerRoles, isAtLeastWriter } from '@/access'
 import type { CollectionConfig } from 'payload'
 
 export const Media: CollectionConfig = {
@@ -7,6 +7,9 @@ export const Media: CollectionConfig = {
     read: () => true,
     create: isAtLeastWriter,
     delete: isAtLeastWriter,
+  },
+  admin: {
+    hidden: hiddenForLowerRoles,
   },
   fields: [
     {

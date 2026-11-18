@@ -1,4 +1,4 @@
-import { isAtLeastWriter } from '@/access'
+import { hiddenForLowerRoles, isAtLeastWriter } from '@/access'
 import { GlobalConfig } from 'payload'
 
 export const Swing: GlobalConfig = {
@@ -6,6 +6,9 @@ export const Swing: GlobalConfig = {
   access: {
     read: () => true,
     update: isAtLeastWriter,
+  },
+  admin: {
+    hidden: hiddenForLowerRoles,
   },
   fields: [
     {

@@ -1,5 +1,10 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated, publicRead } from '@/access'
+import {
+  isAtLeastWriter,
+  isAtLeastWriterField,
+  organizationRead,
+  organizationUpdate,
+} from '@/access'
 import { locationGroup } from '@/fields/location'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
 
@@ -8,6 +13,9 @@ import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
  *
  * Replaces the old `schools` collection. `kind` is descriptive only; it has no
  * effect on permissions or filtering.
+ *
+ * Linked users (`members`) may edit the description; everything else is
+ * reserved for writers and admins.
  */
 export const Organizations: CollectionConfig = {
   slug: 'organizations',
@@ -21,10 +29,10 @@ export const Organizations: CollectionConfig = {
     defaultColumns: ['name', 'kind', 'slug'],
   },
   access: {
-    read: publicRead,
-    create: authenticated,
-    update: authenticated,
-    delete: authenticated,
+    read: organizationRead,
+    create: isAtLeastWriter,
+    update: organizationUpdate,
+    delete: isAtLeastWriter,
   },
   hooks: {
     // A renamed organization appears in cached occurrences, so clear on change.
@@ -37,6 +45,7 @@ export const Organizations: CollectionConfig = {
       type: 'text',
       required: true,
       label: { de: 'Name', en: 'Name' },
+      access: { update: isAtLeastWriterField },
     },
     {
       name: 'slug',
@@ -45,6 +54,7 @@ export const Organizations: CollectionConfig = {
       unique: true,
       index: true,
       label: { de: 'Slug', en: 'Slug' },
+      access: { update: isAtLeastWriterField },
       admin: {
         description: {
           de: 'Kurzname für Links, z. B. "swing-in-hamburg".',
@@ -58,6 +68,7 @@ export const Organizations: CollectionConfig = {
       required: true,
       defaultValue: 'school',
       label: { de: 'Art', en: 'Kind' },
+      access: { update: isAtLeastWriterField },
       options: [
         { value: 'school', label: { de: 'Tanzschule', en: 'Dance school' } },
         {
@@ -73,11 +84,33 @@ export const Organizations: CollectionConfig = {
       type: 'textarea',
       localized: true,
       label: { de: 'Beschreibung', en: 'Description' },
+      // No field-level restriction: the only users who can reach an update are
+      // writers/admin and linked members (see `organizationUpdate`), and the
+      // description is intentionally the one field members may change.
+    },
+    {
+      name: 'members',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      label: { de: 'Zugeordnete Benutzer', en: 'Linked users' },
+      access: {
+        // Not public: these are user documents.
+        read: isAtLeastWriterField,
+        update: isAtLeastWriterField,
+      },
+      admin: {
+        description: {
+          de: 'Diese Benutzer dürfen die Beschreibung der Organisation bearbeiten. Die Zuordnung ist optional und wird von Redakteuren gepflegt.',
+          en: 'These users may edit the organization description. Linking is optional and managed by writers.',
+        },
+      },
     },
     {
       name: 'links',
       type: 'array',
       label: { de: 'Links', en: 'Links' },
+      access: { update: isAtLeastWriterField },
       labels: {
         singular: { de: 'Link', en: 'Link' },
         plural: { de: 'Links', en: 'Links' },
@@ -104,6 +137,9 @@ export const Organizations: CollectionConfig = {
         },
       ],
     },
-    locationGroup('defaultLocation', 'Standard-Ort', 'Default location'),
+    {
+      ...locationGroup('defaultLocation', 'Standard-Ort', 'Default location'),
+      access: { update: isAtLeastWriterField },
+    },
   ],
 }

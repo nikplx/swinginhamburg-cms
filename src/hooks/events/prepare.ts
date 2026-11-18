@@ -1,4 +1,6 @@
 import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook } from 'payload'
+import { APIError } from 'payload'
+import { isAtLeastWriterUser, memberOrganizationIDs } from '@/access'
 import { firstAndLast, scheduleProblems } from '@/lib/occurrences/schedule'
 import type { ScheduleValue } from '@/lib/occurrences/types'
 import { pruneExceptions } from '@/lib/occurrences/prune'
@@ -56,6 +58,41 @@ export const prepareEvent: CollectionBeforeValidateHook = async ({
   }
 
   return next
+}
+
+/**
+ * Preventing lower-role users from filing events under someone else's
+ * organization cannot be expressed as create access: the admin create view
+ * checks access before any organizer has been picked, so a data-dependent rule
+ * would hide the form entirely. Enforce it here instead.
+ */
+export const enforceEventOrganizerScope: CollectionBeforeValidateHook = async ({
+  data,
+  operation,
+  req,
+}) => {
+  if (operation !== 'create') return data
+
+  const user = req.user as any
+  if (!user || isAtLeastWriterUser(user)) return data
+
+  const organizers = (Array.isArray(data?.organizers) ? data.organizers : []).map((entry: any) =>
+    entry && typeof entry === 'object' ? entry.id : entry,
+  )
+  // Missing organizers are a validation concern.
+  if (!organizers.length) return data
+
+  const organizationIDs = await memberOrganizationIDs(req)
+  const foreign = organizers.filter((id: number | string) => !organizationIDs.includes(id))
+
+  if (foreign.length) {
+    throw new APIError(
+      'Du kannst nur Veranstaltungen für Organisationen anlegen, denen du zugeordnet bist.',
+      403,
+    )
+  }
+
+  return data
 }
 
 export const deriveEventFields: CollectionBeforeChangeHook = async ({

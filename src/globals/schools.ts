@@ -1,5 +1,5 @@
 
-import { isAtLeastWriter } from '@/access'
+import { hiddenForLowerRoles, isAtLeastWriter } from '@/access'
 import { GlobalConfig } from 'payload'
 
 export const SchoolsGlobal: GlobalConfig = {
@@ -7,6 +7,9 @@ export const SchoolsGlobal: GlobalConfig = {
   access: {
     read: () => true,
     update: isAtLeastWriter,
+  },
+  admin: {
+    hidden: hiddenForLowerRoles,
   },
   fields: [
     {

@@ -1,7 +1,13 @@
 import type { CollectionConfig, Field } from 'payload'
-import { authenticated, publishedOrAuthenticated } from '@/access'
+import {
+  eventCreate,
+  eventDelete,
+  eventRead,
+  eventUpdate,
+  isAtLeastWriterField,
+} from '@/access'
 import { locationGroup } from '@/fields/location'
-import { deriveEventFields, prepareEvent } from '@/hooks/events/prepare'
+import { deriveEventFields, enforceEventOrganizerScope, prepareEvent } from '@/hooks/events/prepare'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
 import { scheduleProblems } from '@/lib/occurrences/schedule'
 import { validateExceptions } from '@/lib/occurrences/prune'
@@ -54,10 +60,10 @@ export const Events: CollectionConfig = {
     defaultColumns: ['title', 'type', 'firstDate', '_status'],
   },
   access: {
-    read: publishedOrAuthenticated,
-    create: authenticated,
-    update: authenticated,
-    delete: authenticated,
+    read: eventRead,
+    create: eventCreate,
+    update: eventUpdate,
+    delete: eventDelete,
   },
   // Drafts are required so unpublished edits can be staged. Deleting a draft
   // and keeping the published version works out of the box.
@@ -65,7 +71,7 @@ export const Events: CollectionConfig = {
     drafts: true,
   },
   hooks: {
-    beforeValidate: [prepareEvent],
+    beforeValidate: [prepareEvent, enforceEventOrganizerScope],
     beforeChange: [deriveEventFields],
     afterChange: [() => invalidateOccurrencesCache()],
     afterDelete: [() => invalidateOccurrencesCache()],
@@ -105,6 +111,10 @@ export const Events: CollectionConfig = {
       relationTo: 'organizations',
       hasMany: true,
       required: true,
+      access: {
+        // Members keep the organizers of their events as they are.
+        update: isAtLeastWriterField,
+      },
       label: { de: 'Veranstalter:innen', en: 'Organizers' },
       admin: {
         description: {
@@ -373,6 +383,9 @@ export const Events: CollectionConfig = {
       type: 'json',
       label: { de: 'Ausnahmen', en: 'Exceptions' },
       admin: {
+        // Edited through the exception table in the schedule preview. Keep the
+        // field stored, but do not expose the raw JSON to editors.
+        hidden: true,
         description: {
           de: 'Wird von der Vorschau gepflegt: Schlüssel ist das lokale Datum (YYYY-MM-DD).',
           en: 'Maintained by the preview: keyed by local date (YYYY-MM-DD).',
