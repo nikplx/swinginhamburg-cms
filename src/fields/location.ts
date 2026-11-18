@@ -40,7 +40,7 @@ export const locationGroup = (name: string, labelDe: string, labelEn: string): G
         const lng = siblingData?.lng
         return typeof lat === 'number' && typeof lng === 'number'
           ? true
-          : 'Bitte die Adresse über die Suche auswählen, damit Koordinaten gesetzt werden.'
+          : 'Bitte die Adresse über die Suche auswählen, damit Koordinaten gesetzt werden. / Please pick the address from the search so coordinates are set.'
       },
     },
     {

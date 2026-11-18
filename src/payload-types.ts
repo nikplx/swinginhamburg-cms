@@ -143,6 +143,9 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  /**
+   * Writers and admins manage all content. Schools and guests only see their own organizations and their events.
+   */
   role: 'system' | 'admin' | 'writer' | 'school' | 'guest';
   /**
    * Organizations whose description this user may edit.
@@ -186,7 +189,21 @@ export interface Organization {
    */
   slug: string;
   kind: 'school' | 'association' | 'individual' | 'other';
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   /**
    * These users may edit the organization description. Linking is optional and managed by writers.
    */
@@ -217,6 +234,9 @@ export interface Organization {
  */
 export interface Media {
   id: number;
+  /**
+   * Short image description for screen readers and search engines.
+   */
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -267,7 +287,7 @@ export interface Dance {
 export interface Event {
   id: number;
   title: string;
-  type: 'class' | 'social' | 'workshop' | 'talk' | 'walk' | 'festival' | 'other';
+  type: 'social' | 'event' | 'workshop' | 'class';
   description?: {
     root: {
       type: string;
@@ -698,6 +718,9 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface Index {
   id: number;
   subtitle?: string | null;
+  /**
+   * Greeting text in the sidebar.
+   */
   intro?: {
     root: {
       type: string;
@@ -728,6 +751,9 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Notice box on the homepage. The first sentence is used as the headline.
+   */
   donationBox?: {
     root: {
       type: string;
@@ -847,6 +873,9 @@ export interface Swing {
  */
 export interface SchoolsGlobal {
   id: number;
+  /**
+   * Introductory text on the organizations page.
+   */
   howToLearn?: {
     root: {
       type: string;

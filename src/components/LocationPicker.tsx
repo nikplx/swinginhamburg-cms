@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, type KeyboardEvent } from 'react'
-import { Banner, Button, FieldDescription, TextInput, useDocumentForm, useFormFields } from '@payloadcms/ui'
+import { Banner, Button, FieldDescription, TextInput, useDocumentForm, useFormFields, useTranslation } from '@payloadcms/ui'
+import { useAdminText } from './useAdminText'
 import './LocationPicker.scss'
 
 type Props = {
@@ -16,6 +17,8 @@ type Props = {
 export const LocationPicker: React.FC<Props> = ({ path }) => {
   const basePath = path.replace(/\.?geocode$/, '')
   const { dispatchFields } = useDocumentForm()
+  const t = useAdminText()
+  const { i18n } = useTranslation()
 
   const address = useFormFields(
     ([fields]) => (fields?.[`${basePath}.address`]?.value as string) ?? '',
@@ -35,14 +38,19 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
     setError(null)
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(
-          query,
-        )}`,
+        `https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=${
+          i18n?.language === 'en' ? 'en' : 'de'
+        }&q=${encodeURIComponent(query)}`,
       )
       setResults(await response.json())
     } catch (searchError) {
       console.error('Geocoding failed', searchError)
-      setError('Adresssuche fehlgeschlagen. Bitte erneut versuchen.')
+      setError(
+        t(
+          'Adresssuche fehlgeschlagen. Bitte erneut versuchen.',
+          'Address search failed. Please try again.',
+        ),
+      )
     } finally {
       setLoading(false)
     }
@@ -71,17 +79,23 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
   return (
     <div className="location-picker">
       <TextInput
-        description="Adresse eingeben, Enter drücken und einen Treffer auswählen. Nur so werden die Karten-Koordinaten gesetzt."
-        label="Adresse suchen"
+        description={t(
+          'Adresse eingeben, Enter drücken und einen Treffer auswählen. Nur so werden die Karten-Koordinaten gesetzt.',
+          'Enter an address, press Enter and pick a result. This is the only way map coordinates are set.',
+        )}
+        label={t('Adresse suchen', 'Search address')}
         path={`${basePath}.geocode`}
-        placeholder={address || 'Straße, PLZ Hamburg'}
+        placeholder={address || t('Straße, PLZ Hamburg', 'Street, postal code Hamburg')}
         value={query}
         onChange={(event: React.ChangeEvent<HTMLInputElement>) => setQuery(event.target.value)}
         onKeyDown={search}
       />
 
       {loading && (
-        <FieldDescription description="Suche läuft …" path={`${basePath}.geocode`} />
+        <FieldDescription
+          description={t('Suche läuft …', 'Searching …')}
+          path={`${basePath}.geocode`}
+        />
       )}
 
       {error && <Banner type="error">{error}</Banner>}

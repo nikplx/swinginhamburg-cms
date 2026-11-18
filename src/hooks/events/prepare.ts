@@ -87,7 +87,7 @@ export const enforceEventOrganizerScope: CollectionBeforeValidateHook = async ({
 
   if (foreign.length) {
     throw new APIError(
-      'Du kannst nur Veranstaltungen für Organisationen anlegen, denen du zugeordnet bist.',
+      'Du kannst nur Veranstaltungen für Organisationen anlegen, denen du zugeordnet bist. / You can only create events for organizations you are linked to.',
       403,
     )
   }

@@ -6,6 +6,7 @@ import {
   organizationUpdate,
 } from '@/access'
 import { locationGroup } from '@/fields/location'
+import { simpleRichTextEditor } from '@/fields/editors'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
 
 /**
@@ -81,9 +82,10 @@ export const Organizations: CollectionConfig = {
     },
     {
       name: 'description',
-      type: 'textarea',
+      type: 'richText',
       localized: true,
       label: { de: 'Beschreibung', en: 'Description' },
+      editor: simpleRichTextEditor,
       // No field-level restriction: the only users who can reach an update are
       // writers/admin and linked members (see `organizationUpdate`), and the
       // description is intentionally the one field members may change.

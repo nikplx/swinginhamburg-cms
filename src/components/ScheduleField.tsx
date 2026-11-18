@@ -19,6 +19,7 @@ import {
   useFormFields,
 } from '@payloadcms/ui'
 import { reduceFieldsToValues } from 'payload/shared'
+import { useAdminLocale, useAdminText } from './useAdminText'
 import './ScheduleField.scss'
 
 import { expand } from '@/lib/occurrences/expand'
@@ -44,48 +45,56 @@ type Props = {
 
 type DateAppearance = 'dayOnly' | 'monthOnly' | 'timeOnly'
 
-const WEEKDAYS = [
-  { code: 'MO', label: 'Mo', longLabel: 'Montag' },
-  { code: 'TU', label: 'Di', longLabel: 'Dienstag' },
-  { code: 'WE', label: 'Mi', longLabel: 'Mittwoch' },
-  { code: 'TH', label: 'Do', longLabel: 'Donnerstag' },
-  { code: 'FR', label: 'Fr', longLabel: 'Freitag' },
-  { code: 'SA', label: 'Sa', longLabel: 'Samstag' },
-  { code: 'SU', label: 'So', longLabel: 'Sonntag' },
-] as const
+type Bilingual = { de: string; en: string }
 
-const BLOCK_TYPE_OPTIONS = [
-  { label: 'Einmalig', value: 'once' },
-  { label: 'Bestimmte Termine', value: 'dates' },
-  { label: 'Regelmäßig', value: 'recurring' },
-  { label: 'Kurs-Block', value: 'course' },
+type LocalizedOption = { label: Bilingual; value: string }
+
+const localizedOptions = (
+  options: LocalizedOption[],
+  t: (de: string, en: string) => string,
+): { label: string; value: string }[] =>
+  options.map((option) => ({ label: t(option.label.de, option.label.en), value: option.value }))
+
+const WEEKDAYS: { code: WeekdayCode; long: Bilingual; short: Bilingual }[] = [
+  { code: 'MO', short: { de: 'Mo', en: 'Mon' }, long: { de: 'Montag', en: 'Monday' } },
+  { code: 'TU', short: { de: 'Di', en: 'Tue' }, long: { de: 'Dienstag', en: 'Tuesday' } },
+  { code: 'WE', short: { de: 'Mi', en: 'Wed' }, long: { de: 'Mittwoch', en: 'Wednesday' } },
+  { code: 'TH', short: { de: 'Do', en: 'Thu' }, long: { de: 'Donnerstag', en: 'Thursday' } },
+  { code: 'FR', short: { de: 'Fr', en: 'Fri' }, long: { de: 'Freitag', en: 'Friday' } },
+  { code: 'SA', short: { de: 'Sa', en: 'Sat' }, long: { de: 'Samstag', en: 'Saturday' } },
+  { code: 'SU', short: { de: 'So', en: 'Sun' }, long: { de: 'Sonntag', en: 'Sunday' } },
 ]
 
-const FREQUENCY_OPTIONS = [
-  { label: 'Wöchentlich', value: 'weekly' },
-  { label: 'Monatlich', value: 'monthly' },
+const BLOCK_TYPE_OPTIONS: LocalizedOption[] = [
+  { label: { de: 'Einmalig', en: 'Once' }, value: 'once' },
+  { label: { de: 'Bestimmte Termine', en: 'Specific dates' }, value: 'dates' },
+  { label: { de: 'Regelmäßig', en: 'Recurring' }, value: 'recurring' },
+  { label: { de: 'Kurs-Block', en: 'Course block' }, value: 'course' },
 ]
 
-const MONTHLY_MODE_OPTIONS = [
-  { label: 'Tag im Monat', value: 'dayOfMonth' },
-  { label: 'n-ter Wochentag', value: 'nthWeekday' },
+const FREQUENCY_OPTIONS: LocalizedOption[] = [
+  { label: { de: 'Wöchentlich', en: 'Weekly' }, value: 'weekly' },
+  { label: { de: 'Monatlich', en: 'Monthly' }, value: 'monthly' },
 ]
 
-const NTH_WEEKDAY_OPTIONS = [
-  { label: '1.', value: '1' },
-  { label: '2.', value: '2' },
-  { label: '3.', value: '3' },
-  { label: '4.', value: '4' },
-  { label: 'Letzter', value: '-1' },
+const MONTHLY_MODE_OPTIONS: LocalizedOption[] = [
+  { label: { de: 'Tag im Monat', en: 'Day of month' }, value: 'dayOfMonth' },
+  { label: { de: 'n-ter Wochentag', en: 'Nth weekday' }, value: 'nthWeekday' },
 ]
 
-const END_MODE_OPTIONS = [
-  { label: 'Nie', value: 'never' },
-  { label: 'Bis zum Datum', value: 'until' },
-  { label: 'Nach Anzahl', value: 'count' },
+const NTH_WEEKDAY_OPTIONS: LocalizedOption[] = [
+  { label: { de: '1.', en: '1st' }, value: '1' },
+  { label: { de: '2.', en: '2nd' }, value: '2' },
+  { label: { de: '3.', en: '3rd' }, value: '3' },
+  { label: { de: '4.', en: '4th' }, value: '4' },
+  { label: { de: 'Letzter', en: 'Last' }, value: '-1' },
 ]
 
-const WEEKDAY_OPTIONS = WEEKDAYS.map((day) => ({ label: day.longLabel, value: day.code }))
+const END_MODE_OPTIONS: LocalizedOption[] = [
+  { label: { de: 'Nie', en: 'Never' }, value: 'never' },
+  { label: { de: 'Bis zum Datum', en: 'Until date' }, value: 'until' },
+  { label: { de: 'Nach Anzahl', en: 'After count' }, value: 'count' },
+]
 
 const pad2 = (value: number) => String(value).padStart(2, '0')
 
@@ -127,20 +136,20 @@ const optionValue = (option: unknown): string => {
   return ''
 }
 
-const formatOccurrence = (occurrence: Occurrence) => {
-  const day = new Intl.DateTimeFormat('de-DE', {
+const formatOccurrence = (occurrence: Occurrence, locale: string) => {
+  const day = new Intl.DateTimeFormat(locale, {
     timeZone: TIME_ZONE,
     weekday: 'short',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
   }).format(new Date(occurrence.start))
-  const time = new Intl.DateTimeFormat('de-DE', {
+  const time = new Intl.DateTimeFormat(locale, {
     timeZone: TIME_ZONE,
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(occurrence.start))
-  const end = new Intl.DateTimeFormat('de-DE', {
+  const end = new Intl.DateTimeFormat(locale, {
     timeZone: TIME_ZONE,
     hour: '2-digit',
     minute: '2-digit',
@@ -187,6 +196,7 @@ function DateControl({
           displayFormat={DISPLAY_FORMATS[appearance]}
           placeholder={placeholder}
           readOnly={readOnly}
+          timeFormat="HH:mm"
           timeIntervals={15}
           value={dateValue}
           onChange={(date) => {
@@ -267,6 +277,12 @@ function SelectControl({
 }
 
 export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
+  const t = useAdminText()
+  const locale = useAdminLocale()
+  const weekdayOptions = WEEKDAYS.map((day) => ({
+    label: t(day.long.de, day.long.en),
+    value: day.code,
+  }))
   const { value: exceptionValue, setValue: setExceptions } = useField<ExceptionsMap>({
     path: 'exceptions',
   })
@@ -448,7 +464,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
     <div className="schedule-field__row">
       <DateControl
         appearance="timeOnly"
-        label="Beginn"
+        label={t('Beginn', 'Start')}
         path={`${path}.${keyPrefix}.startTime`}
         readOnly={readOnly}
         value={startTime}
@@ -456,7 +472,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
       />
       <DateControl
         appearance="timeOnly"
-        label="Ende"
+        label={t('Ende', 'End')}
         path={`${path}.${keyPrefix}.endTime`}
         readOnly={readOnly}
         value={endTime}
@@ -470,7 +486,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
       return (
         <div className="schedule-field__row">
           <DateControl
-            label="Datum"
+            label={t('Datum', 'Date')}
             path={`${path}.once.date`}
             readOnly={readOnly}
             value={block.date}
@@ -494,7 +510,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
           {dates.map((entry, index) => (
             <div className="schedule-field__date-row" key={index}>
               <DateControl
-                label="Datum"
+                label={t('Datum', 'Date')}
                 path={`${path}.dates.${index}.date`}
                 readOnly={readOnly}
                 value={entry.date}
@@ -506,7 +522,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
               />
               <DateControl
                 appearance="timeOnly"
-                label="Beginn"
+                label={t('Beginn', 'Start')}
                 path={`${path}.dates.${index}.startTime`}
                 readOnly={readOnly}
                 value={entry.startTime}
@@ -518,7 +534,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
               />
               <DateControl
                 appearance="timeOnly"
-                label="Ende"
+                label={t('Ende', 'End')}
                 path={`${path}.dates.${index}.endTime`}
                 readOnly={readOnly}
                 value={entry.endTime}
@@ -534,7 +550,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                 size="small"
                 onClick={() => patch({ dates: dates.filter((_, i) => i !== index) } as any)}
               >
-                Entfernen
+                {t('Entfernen', 'Remove')}
               </Button>
             </div>
           ))}
@@ -550,7 +566,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                 } as any)
               }
             >
-              Termin
+              {t('Termin', 'Add date')}
             </Button>
           </div>
         </div>
@@ -562,15 +578,15 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
         <>
           <div className="schedule-field__row">
             <DateControl
-              label="Startdatum"
+              label={t('Startdatum', 'Start date')}
               path={`${path}.course.startDate`}
               readOnly={readOnly}
               value={block.startDate}
               onChange={(startDate) => patch({ startDate } as any)}
             />
             <SelectControl
-              label="Wochentag"
-              options={WEEKDAY_OPTIONS}
+              label={t('Wochentag', 'Weekday')}
+              options={weekdayOptions}
               path={`${path}.course.weekday`}
               readOnly={readOnly}
               value={block.weekday}
@@ -578,7 +594,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             />
             <DateControl
               appearance="timeOnly"
-              label="Beginn"
+              label={t('Beginn', 'Start')}
               path={`${path}.course.startTime`}
               readOnly={readOnly}
               value={block.startTime}
@@ -586,14 +602,14 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             />
             <DateControl
               appearance="timeOnly"
-              label="Ende"
+              label={t('Ende', 'End')}
               path={`${path}.course.endTime`}
               readOnly={readOnly}
               value={block.endTime}
               onChange={(endTime) => patch({ endTime } as any)}
             />
             <NumberControl
-              label="Einheiten"
+              label={t('Einheiten', 'Sessions')}
               path={`${path}.course.sessions`}
               readOnly={readOnly}
               value={block.sessions}
@@ -601,12 +617,12 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             />
           </div>
           <div className="schedule-field__subsection">
-            <FieldLabel label="Ausfalltermine" path={`${path}.course.skipDates`} />
+            <FieldLabel label={t('Ausfalltermine', 'Skip dates')} path={`${path}.course.skipDates`} />
             <div className="schedule-field__dates">
               {(block.skipDates ?? []).map((entry, index) => (
                 <div className="schedule-field__date-row" key={index}>
                   <DateControl
-                    label="Datum"
+                    label={t('Datum', 'Date')}
                     path={`${path}.course.skipDates.${index}.date`}
                     readOnly={readOnly}
                     value={entry.date}
@@ -626,7 +642,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                       } as any)
                     }
                   >
-                    Entfernen
+                    {t('Entfernen', 'Remove')}
                   </Button>
                 </div>
               ))}
@@ -640,7 +656,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                     patch({ skipDates: [...(block.skipDates ?? []), { date: today }] } as any)
                   }
                 >
-                  Ausfalltermin
+                  {t('Ausfalltermin', 'Add skip date')}
                 </Button>
               </div>
             </div>
@@ -654,8 +670,8 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
       <>
         <div className="schedule-field__row">
           <SelectControl
-            label="Wiederholung"
-            options={FREQUENCY_OPTIONS}
+            label={t('Wiederholung', 'Repeat')}
+            options={localizedOptions(FREQUENCY_OPTIONS, t)}
             path={`${path}.recurring.frequency`}
             readOnly={readOnly}
             value={recurring.frequency}
@@ -664,14 +680,14 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             }
           />
           <NumberControl
-            label="Intervall"
+            label={t('Intervall', 'Interval')}
             path={`${path}.recurring.interval`}
             readOnly={readOnly}
             value={recurring.interval ?? 1}
             onChange={(interval) => patch({ interval } as any)}
           />
           <DateControl
-            label="Startdatum"
+            label={t('Startdatum', 'Start date')}
             path={`${path}.recurring.startDate`}
             readOnly={readOnly}
             value={recurring.startDate}
@@ -679,7 +695,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
           />
           <DateControl
             appearance="timeOnly"
-            label="Beginn"
+            label={t('Beginn', 'Start')}
             path={`${path}.recurring.startTime`}
             readOnly={readOnly}
             value={recurring.startTime}
@@ -687,7 +703,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
           />
           <DateControl
             appearance="timeOnly"
-            label="Ende"
+            label={t('Ende', 'End')}
             path={`${path}.recurring.endTime`}
             readOnly={readOnly}
             value={recurring.endTime}
@@ -697,7 +713,10 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
 
         {recurring.frequency === 'weekly' ? (
           <div className="schedule-field__subsection">
-            <FieldLabel label="Wochentage" path={`${path}.recurring.weekdays`} />
+            <FieldLabel
+              label={t('Wochentage', 'Weekdays')}
+              path={`${path}.recurring.weekdays`}
+            />
             <div
               className="schedule-field__weekdays"
               style={readOnly ? { opacity: 0.6, pointerEvents: 'none' } : undefined}
@@ -705,7 +724,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
               <PillSelector
                 onClick={({ pill }) => toggleWeekday(pill.name as WeekdayCode)}
                 pills={WEEKDAYS.map((day) => ({
-                  Label: day.label,
+                  Label: t(day.short.de, day.short.en),
                   name: day.code,
                   selected: (recurring.weekdays ?? []).includes(day.code),
                 }))}
@@ -715,8 +734,8 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
         ) : (
           <div className="schedule-field__row">
             <SelectControl
-              label="Monatsregel"
-              options={MONTHLY_MODE_OPTIONS}
+              label={t('Monatsregel', 'Monthly rule')}
+              options={localizedOptions(MONTHLY_MODE_OPTIONS, t)}
               path={`${path}.recurring.monthlyMode`}
               readOnly={readOnly}
               value={recurring.monthlyMode ?? 'dayOfMonth'}
@@ -724,7 +743,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             />
             {(recurring.monthlyMode ?? 'dayOfMonth') === 'dayOfMonth' ? (
               <NumberControl
-                label="Tag"
+                label={t('Tag', 'Day')}
                 max={31}
                 path={`${path}.recurring.dayOfMonth`}
                 readOnly={readOnly}
@@ -734,8 +753,8 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             ) : (
               <>
                 <SelectControl
-                  label="Welcher"
-                  options={NTH_WEEKDAY_OPTIONS}
+                  label={t('Welcher', 'Which')}
+                  options={localizedOptions(NTH_WEEKDAY_OPTIONS, t)}
                   path={`${path}.recurring.nthWeekday`}
                   readOnly={readOnly}
                   value={String(recurring.nthWeekday ?? 1)}
@@ -744,8 +763,8 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                   }
                 />
                 <SelectControl
-                  label="Wochentag"
-                  options={WEEKDAY_OPTIONS}
+                  label={t('Wochentag', 'Weekday')}
+                  options={weekdayOptions}
                   path={`${path}.recurring.weekday`}
                   readOnly={readOnly}
                   value={recurring.weekday ?? 'MO'}
@@ -758,8 +777,8 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
 
         <div className="schedule-field__row">
           <SelectControl
-            label="Ende"
-            options={END_MODE_OPTIONS}
+            label={t('Ende', 'End')}
+            options={localizedOptions(END_MODE_OPTIONS, t)}
             path={`${path}.recurring.endMode`}
             readOnly={readOnly}
             value={recurring.endMode}
@@ -769,7 +788,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
           />
           {recurring.endMode === 'until' && (
             <DateControl
-              label="Bis"
+              label={t('Bis', 'Until')}
               path={`${path}.recurring.until`}
               readOnly={readOnly}
               value={recurring.until}
@@ -778,7 +797,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
           )}
           {recurring.endMode === 'count' && (
             <NumberControl
-              label="Anzahl"
+              label={t('Anzahl', 'Count')}
               path={`${path}.recurring.count`}
               readOnly={readOnly}
               value={recurring.count ?? 1}
@@ -794,17 +813,23 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
     <div className="schedule-field">
       {lostKeys.length > 0 && (
         <Banner type="info">
-          {lostKeys.length}{' '}
-          {lostKeys.length === 1 ? 'Hinweis passt' : 'Hinweise passen'} nicht mehr zum neuen
-          Zeitplan und {lostKeys.length === 1 ? 'wird' : 'werden'} beim Speichern entfernt:{' '}
-          {lostKeys.join(', ')}
+          {t(
+            `${lostKeys.length} ${
+              lostKeys.length === 1 ? 'Hinweis passt' : 'Hinweise passen'
+            } nicht mehr zum neuen Zeitplan und ${
+              lostKeys.length === 1 ? 'wird' : 'werden'
+            } beim Speichern entfernt: ${lostKeys.join(', ')}`,
+            `${lostKeys.length} ${
+              lostKeys.length === 1 ? 'note does' : 'notes do'
+            } not match the new schedule and will be removed on save: ${lostKeys.join(', ')}`,
+          )}
         </Banner>
       )}
 
       <div className="schedule-field__block">
         <SelectControl
-          label="Zeitplan-Art"
-          options={BLOCK_TYPE_OPTIONS}
+          label={t('Zeitplan-Art', 'Schedule type')}
+          options={localizedOptions(BLOCK_TYPE_OPTIONS, t)}
           path={`${path}.blockType`}
           readOnly={readOnly}
           value={block.blockType}
@@ -816,13 +841,13 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
 
       <Collapsible
         className="schedule-field__preview"
-        header={<strong>Vorschau</strong>}
+        header={<strong>{t('Vorschau', 'Preview')}</strong>}
         initCollapsed={false}
       >
         <div className="schedule-field__toolbar">
           <DateControl
             appearance="monthOnly"
-            label="Zu Monat springen"
+            label={t('Zu Monat springen', 'Jump to month')}
             path={`${path}.preview.month`}
             value={monthJump}
             onChange={(month) => {
@@ -839,14 +864,17 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                 setLimit(8)
               }}
             >
-              Ab heute
+              {t('Ab heute', 'From today')}
             </Button>
           )}
         </div>
 
         {visible.length === 0 && (
           <FieldDescription
-            description="Noch keine Termine – bitte den Zeitplan vervollständigen."
+            description={t(
+              'Noch keine Termine – bitte den Zeitplan vervollständigen.',
+              'No dates yet – please complete the schedule.',
+            )}
             path={`${path}.preview.empty`}
           />
         )}
@@ -854,7 +882,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
         {visible.length > 0 && (
           <div className="schedule-preview__list">
             {visible.map((occurrence) => {
-              const { day, time, end } = formatOccurrence(occurrence)
+              const { day, time, end } = formatOccurrence(occurrence, locale)
               const isEditingTime = editTime === occurrence.date
               return (
                 <div
@@ -867,14 +895,14 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                       <div className="schedule-preview__editor">
                         <DateControl
                           appearance="timeOnly"
-                          label="Beginn"
+                          label={t('Beginn', 'Start')}
                           path={`${path}.exceptions.${occurrence.date}.startTime`}
                           value={draftStart}
                           onChange={setDraftStart}
                         />
                         <DateControl
                           appearance="timeOnly"
-                          label="Ende"
+                          label={t('Ende', 'End')}
                           path={`${path}.exceptions.${occurrence.date}.endTime`}
                           value={draftEnd}
                           onChange={setDraftEnd}
@@ -890,14 +918,14 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                             setEditTime(null)
                           }}
                         >
-                          OK
+                          {t('OK', 'OK')}
                         </Button>
                         <Button
                           buttonStyle="secondary"
                           size="small"
                           onClick={() => setEditTime(null)}
                         >
-                          Abbrechen
+                          {t('Abbrechen', 'Cancel')}
                         </Button>
                       </div>
                     ) : (
@@ -907,7 +935,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                         </span>
                         {occurrence.cancelled && (
                           <Pill pillStyle="warning" size="small">
-                            Fällt aus
+                            {t('Fällt aus', 'Cancelled')}
                           </Pill>
                         )}
                         {occurrence.note && (
@@ -919,9 +947,9 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                     {editNote === occurrence.date && (
                       <div className="schedule-preview__editor">
                         <TextInput
-                          label="Notiz"
+                          label={t('Notiz', 'Note')}
                           path={`${path}.exceptions.${occurrence.date}.note`}
-                          placeholder="Notiz"
+                          placeholder={t('Notiz', 'Note')}
                           value={draftNote}
                           onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                             setDraftNote(event.target.value)
@@ -935,14 +963,14 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                             setEditNote(null)
                           }}
                         >
-                          OK
+                          {t('OK', 'OK')}
                         </Button>
                         <Button
                           buttonStyle="secondary"
                           size="small"
                           onClick={() => setEditNote(null)}
                         >
-                          Abbrechen
+                          {t('Abbrechen', 'Cancel')}
                         </Button>
                       </div>
                     )}
@@ -959,7 +987,9 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                         })
                       }
                     >
-                      {occurrence.cancelled ? 'Absage aufheben' : 'Absagen'}
+                      {occurrence.cancelled
+                        ? t('Absage aufheben', 'Undo cancellation')
+                        : t('Absagen', 'Cancel')}
                     </Button>
                     <Button
                       buttonStyle="subtle"
@@ -971,7 +1001,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                         setEditTime(null)
                       }}
                     >
-                      Notiz
+                      {t('Notiz', 'Note')}
                     </Button>
                     <Button
                       buttonStyle="subtle"
@@ -984,7 +1014,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
                         setEditNote(null)
                       }}
                     >
-                      Zeit
+                      {t('Zeit', 'Time')}
                     </Button>
                   </div>
                 </div>
@@ -996,21 +1026,21 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
         {occurrences.length > limit && (
           <div>
             <Button buttonStyle="secondary" size="small" onClick={() => setLimit(limit + 8)}>
-              Mehr anzeigen
+              {t('Mehr anzeigen', 'Show more')}
             </Button>
           </div>
         )}
 
         <div className="schedule-field__toolbar schedule-field__pause">
           <DateControl
-            label="Pause von"
+            label={t('Pause von', 'Pause from')}
             path={`${path}.preview.pauseFrom`}
             readOnly={readOnly}
             value={pauseFrom}
             onChange={setPauseFrom}
           />
           <DateControl
-            label="Pause bis"
+            label={t('Pause bis', 'Pause to')}
             path={`${path}.preview.pauseTo`}
             readOnly={readOnly}
             value={pauseTo}
@@ -1022,7 +1052,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             size="small"
             onClick={applyPause}
           >
-            Termine pausieren
+            {t('Termine pausieren', 'Pause occurrences')}
           </Button>
         </div>
       </Collapsible>

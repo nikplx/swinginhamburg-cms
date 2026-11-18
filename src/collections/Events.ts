@@ -7,6 +7,7 @@ import {
   isAtLeastWriterField,
 } from '@/access'
 import { locationGroup } from '@/fields/location'
+import { simpleRichTextEditor } from '@/fields/editors'
 import { deriveEventFields, enforceEventOrganizerScope, prepareEvent } from '@/hooks/events/prepare'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
 import { scheduleProblems } from '@/lib/occurrences/schedule'
@@ -88,15 +89,13 @@ export const Events: CollectionConfig = {
       type: 'select',
       required: true,
       index: true,
+      defaultValue: 'event',
       label: { de: 'Art', en: 'Type' },
       options: [
-        { value: 'class', label: { de: 'Kurs', en: 'Class' } },
         { value: 'social', label: { de: 'Social', en: 'Social' } },
+        { value: 'event', label: { de: 'Event', en: 'Event' } },
         { value: 'workshop', label: { de: 'Workshop', en: 'Workshop' } },
-        { value: 'talk', label: { de: 'Vortrag', en: 'Talk' } },
-        { value: 'walk', label: { de: 'Spaziergang', en: 'Walk' } },
-        { value: 'festival', label: { de: 'Festival', en: 'Festival' } },
-        { value: 'other', label: { de: 'Sonstiges', en: 'Other' } },
+        { value: 'class', label: { de: 'Kurs', en: 'Class' } },
       ],
     },
     {
@@ -104,6 +103,8 @@ export const Events: CollectionConfig = {
       type: 'richText',
       localized: true,
       label: { de: 'Beschreibung', en: 'Description' },
+      // No headings and no uploads in public descriptions.
+      editor: simpleRichTextEditor,
     },
     {
       name: 'organizers',
@@ -143,7 +144,7 @@ export const Events: CollectionConfig = {
         const type = siblingData?.type as EventType | undefined
         const chosen = Array.isArray(value) ? value : []
         if (type && CLASS_LIKE_TYPES.includes(type) && chosen.length === 0) {
-          return 'Für Kurse und Workshops wird mindestens ein Tanzstil benötigt.'
+          return 'Für Kurse und Workshops wird mindestens ein Tanzstil benötigt. / Classes and workshops need at least one dance style.'
         }
         return true
       },

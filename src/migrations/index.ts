@@ -10,6 +10,8 @@ import * as migration_20260612_220819 from './20260612_220819';
 import * as migration_20261117_224917_unified_events from './20261117_224917_unified_events';
 import * as migration_20261118_124847_remove_teachers from './20261118_124847_remove_teachers';
 import * as migration_20261118_161637_organization_members from './20261118_161637_organization_members';
+import * as migration_20261118_190455_organization_description_richtext from './20261118_190455_organization_description_richtext';
+import * as migration_20261118_190937_event_type_options from './20261118_190937_event_type_options';
 
 export const migrations = [
   {
@@ -70,6 +72,16 @@ export const migrations = [
   {
     up: migration_20261118_161637_organization_members.up,
     down: migration_20261118_161637_organization_members.down,
-    name: '20261118_161637_organization_members'
+    name: '20261118_161637_organization_members',
+  },
+  {
+    up: migration_20261118_190455_organization_description_richtext.up,
+    down: migration_20261118_190455_organization_description_richtext.down,
+    name: '20261118_190455_organization_description_richtext',
+  },
+  {
+    up: migration_20261118_190937_event_type_options.up,
+    down: migration_20261118_190937_event_type_options.down,
+    name: '20261118_190937_event_type_options'
   },
 ];

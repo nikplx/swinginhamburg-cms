@@ -3,6 +3,10 @@ import type { CollectionConfig } from 'payload'
 
 export const Users: CollectionConfig = {
   slug: 'users',
+  labels: {
+    singular: { de: 'Benutzer', en: 'User' },
+    plural: { de: 'Benutzer', en: 'Users' },
+  },
   access: {
     read: canReadUser,
     update: isAdmin,
@@ -12,6 +16,7 @@ export const Users: CollectionConfig = {
   admin: {
     hidden: hiddenForLowerRoles,
     useAsTitle: 'email',
+    group: { de: 'Verwaltung', en: 'Administration' },
   },
   auth: {
     useAPIKey: true,
@@ -64,9 +69,22 @@ export const Users: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'guest',
-      options: ['system', 'admin', 'writer', 'school', 'guest'],
+      label: { de: 'Rolle', en: 'Role' },
+      options: [
+        { value: 'system', label: { de: 'System', en: 'System' } },
+        { value: 'admin', label: { de: 'Administrator:in', en: 'Admin' } },
+        { value: 'writer', label: { de: 'Redakteur:in', en: 'Writer' } },
+        { value: 'school', label: { de: 'Schule', en: 'School' } },
+        { value: 'guest', label: { de: 'Gast', en: 'Guest' } },
+      ],
       access: {
         update: isAdminField,
+      },
+      admin: {
+        description: {
+          de: 'Redakteur:innen und Administrator:innen verwalten alle Inhalte. Schulen und Gäste sehen nur ihre eigenen Organisationen und deren Veranstaltungen.',
+          en: 'Writers and admins manage all content. Schools and guests only see their own organizations and their events.',
+        },
       },
     },
     {

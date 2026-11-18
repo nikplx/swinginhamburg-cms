@@ -5,15 +5,7 @@
  * It must never import from `payload`, `@payloadcms/*` or React.
  */
 
-export const EVENT_TYPES = [
-  'class',
-  'social',
-  'workshop',
-  'talk',
-  'walk',
-  'festival',
-  'other',
-] as const
+export const EVENT_TYPES = ['social', 'event', 'workshop', 'class'] as const
 export type EventType = (typeof EVENT_TYPES)[number]
 
 /** Types where a dance style is mandatory and a level is shown. */
