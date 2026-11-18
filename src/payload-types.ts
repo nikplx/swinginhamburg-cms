@@ -287,7 +287,7 @@ export interface Dance {
 export interface Event {
   id: number;
   title: string;
-  type: 'social' | 'event' | 'workshop' | 'class';
+  type: 'social' | 'event' | 'class';
   description?: {
     root: {
       type: string;

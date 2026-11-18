@@ -94,7 +94,6 @@ export const Events: CollectionConfig = {
       options: [
         { value: 'social', label: { de: 'Social', en: 'Social' } },
         { value: 'event', label: { de: 'Event', en: 'Event' } },
-        { value: 'workshop', label: { de: 'Workshop', en: 'Workshop' } },
         { value: 'class', label: { de: 'Kurs', en: 'Class' } },
       ],
     },
@@ -144,7 +143,7 @@ export const Events: CollectionConfig = {
         const type = siblingData?.type as EventType | undefined
         const chosen = Array.isArray(value) ? value : []
         if (type && CLASS_LIKE_TYPES.includes(type) && chosen.length === 0) {
-          return 'Für Kurse und Workshops wird mindestens ein Tanzstil benötigt. / Classes and workshops need at least one dance style.'
+          return 'Für Kurse wird mindestens ein Tanzstil benötigt. / Classes need at least one dance style.'
         }
         return true
       },
