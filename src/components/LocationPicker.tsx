@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, type KeyboardEvent } from 'react'
-import { Banner, Button, FieldDescription, TextInput, useDocumentForm, useFormFields, useTranslation } from '@payloadcms/ui'
+import { Banner, FieldDescription, TextInput, useDocumentForm, useFormFields, useTranslation } from '@payloadcms/ui'
 import { useAdminText } from './useAdminText'
 import './LocationPicker.scss'
 
@@ -38,7 +38,7 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
     setError(null)
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=${
+        `https://nominatim.openstreetmap.org/search?format=json&limit=10&accept-language=${
           i18n?.language === 'en' ? 'en' : 'de'
         }&q=${encodeURIComponent(query)}`,
       )
@@ -103,14 +103,14 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
       {results.length > 0 && (
         <div className="location-picker__results">
           {results.map((result) => (
-            <Button
-              buttonStyle="subtle"
+            <button
+              type="button"
               className="location-picker__result"
               key={result.place_id}
               onClick={() => select(result)}
             >
               {result.display_name}
-            </Button>
+            </button>
           ))}
         </div>
       )}
