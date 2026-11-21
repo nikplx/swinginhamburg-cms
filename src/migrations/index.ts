@@ -15,6 +15,7 @@ import * as migration_20261118_190937_event_type_options from './20261118_190937
 import * as migration_20261118_212710_remove_workshop_type from './20261118_212710_remove_workshop_type';
 import * as migration_20261121_135132_remove_system_role_last_confirmed from './20261121_135132_remove_system_role_last_confirmed';
 import * as migration_20261121_150944_structured_addresses from './20261121_150944_structured_addresses';
+import * as migration_20261121_152905_upgrade_payload_3_94 from './20261121_152905_upgrade_payload_3_94';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20261121_150944_structured_addresses.up,
     down: migration_20261121_150944_structured_addresses.down,
-    name: '20261121_150944_structured_addresses'
+    name: '20261121_150944_structured_addresses',
+  },
+  {
+    up: migration_20261121_152905_upgrade_payload_3_94.up,
+    down: migration_20261121_152905_upgrade_payload_3_94.down,
+    name: '20261121_152905_upgrade_payload_3_94'
   },
 ];
