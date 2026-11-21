@@ -105,3 +105,38 @@ export interface Occurrence {
   allDay: boolean
   note?: string
 }
+
+/** Event fields the public endpoint exposes, once per event. */
+export interface PublicEventSummary {
+  id: number | string
+  title: string
+  type: EventType
+  level?: null | string
+  /** Lexical rich text state, already localized. */
+  description?: unknown
+  organizers: { id: number | string; name?: string; slug?: string }[]
+  danceStyles: {
+    id: number | string
+    name?: string
+    shortName?: string
+    slug?: string
+  }[]
+  location?: {
+    name?: null | string
+    address?: null | string
+    lat?: null | number
+    lng?: null | number
+    directionsNote?: null | string
+  } | null
+  firstDate?: null | string
+  lastDate?: null | string
+}
+
+/**
+ * Response of `GET /api/occurrences`. Event details are stored once in
+ * `events` (keyed by `String(id)`); occurrences reference them by `eventId`.
+ */
+export interface OccurrencesResponse {
+  events: Record<string, PublicEventSummary>
+  occurrences: Occurrence[]
+}

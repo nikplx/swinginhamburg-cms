@@ -2,36 +2,14 @@ import type { Endpoint, PayloadRequest, Where } from 'payload'
 import { expand } from '@/lib/occurrences/expand'
 import { getCached, setCached } from '@/lib/occurrences/cache'
 import { addLocalDays, daysBetween, isDateString, todayLocal } from '@/lib/occurrences/time'
-import type { ExceptionsMap, Occurrence } from '@/lib/occurrences/types'
-import { EVENT_TYPES, type EventType } from '@/lib/occurrences/types'
-
-export interface PublicEventSummary {
-  id: number | string
-  title: string
-  type: EventType
-  level?: null | string
-  description?: unknown
-  organizers: { id: number | string; name?: string; slug?: string }[]
-  danceStyles: {
-    id: number | string
-    name?: string
-    shortName?: string
-    slug?: string
-  }[]
-  location?: {
-    name?: null | string
-    address?: null | string
-    lat?: null | number
-    lng?: null | number
-    directionsNote?: null | string
-  } | null
-  firstDate?: null | string
-  lastDate?: null | string
-}
-
-export interface PublicOccurrence extends Occurrence {
-  event: PublicEventSummary
-}
+import {
+  EVENT_TYPES,
+  type EventType,
+  type ExceptionsMap,
+  type Occurrence,
+  type OccurrencesResponse,
+  type PublicEventSummary,
+} from '@/lib/occurrences/types'
 
 /** The frontend calendar asks for 12 months starting on the 1st of a month. */
 const MAX_RANGE_DAYS = 400
@@ -98,7 +76,7 @@ export const occurrencesEndpoint: Endpoint = {
       (danceStyleParam && danceStyleId === undefined) ||
       (organizationParam && organizationId === undefined)
     ) {
-      return Response.json({ occurrences: [] })
+      return Response.json({ events: {}, occurrences: [] } satisfies OccurrencesResponse)
     }
 
     const cacheKey = JSON.stringify({
@@ -109,7 +87,7 @@ export const occurrencesEndpoint: Endpoint = {
       organizationId: organizationId ?? null,
       locale,
     })
-    const cached = getCached<{ occurrences: PublicOccurrence[] }>(cacheKey)
+    const cached = getCached<OccurrencesResponse>(cacheKey)
     if (cached) return Response.json(cached)
 
     // Only events whose derived bounds overlap the range can contribute
@@ -148,7 +126,8 @@ export const occurrencesEndpoint: Endpoint = {
       req,
     })
 
-    const occurrences: PublicOccurrence[] = []
+    const events: OccurrencesResponse['events'] = {}
+    const occurrences: Occurrence[] = []
     for (const event of docs) {
       const expanded = expand(
         {
@@ -190,17 +169,17 @@ export const occurrencesEndpoint: Endpoint = {
         lastDate: event.lastDate,
       }
 
-      for (const occurrence of expanded) {
-        occurrences.push({ ...occurrence, event: summary })
-      }
+      if (!expanded.length) continue
+      events[String(event.id)] = summary
+      occurrences.push(...expanded)
     }
 
     occurrences.sort(
       (a, b) => a.start.localeCompare(b.start) || String(a.eventId).localeCompare(String(b.eventId)),
     )
 
-    const payload = { occurrences }
-    setCached(cacheKey, payload)
-    return Response.json(payload)
+    const body: OccurrencesResponse = { events, occurrences }
+    setCached(cacheKey, body)
+    return Response.json(body)
   },
 }
