@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { hiddenForLowerRoles, isAtLeastWriter, publicRead } from '@/access'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
+import { richTextHtml } from '@/fields/richTextHtml'
 
 /**
  * Dance styles ("dance-styles" in the spec). The repo has always called this
@@ -69,5 +70,6 @@ export const Dances: CollectionConfig = {
       localized: true,
       label: { de: 'Beschreibung', en: 'Description' },
     },
+    richTextHtml('description'),
   ],
 }

@@ -127,8 +127,8 @@ export interface PublicEventSummary {
   title: string
   type: EventType
   level?: null | string
-  /** Lexical rich text state, already localized. */
-  description?: unknown
+  /** Description rendered to sanitized HTML in the requested locale ('' if empty). */
+  descriptionHtml: string
   organizers: { id: number | string; name?: string; slug?: string }[]
   danceStyles: {
     id: number | string

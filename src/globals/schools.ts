@@ -1,6 +1,7 @@
 import { hiddenForLowerRoles, isAtLeastWriter } from '@/access'
 import { simpleRichTextEditor } from '@/fields/editors'
 import { GlobalConfig } from 'payload'
+import { richTextHtml } from '@/fields/richTextHtml'
 
 export const SchoolsGlobal: GlobalConfig = {
   slug: 'schools-global',
@@ -27,5 +28,6 @@ export const SchoolsGlobal: GlobalConfig = {
         },
       },
     },
+    richTextHtml('howToLearn'),
   ],
 }

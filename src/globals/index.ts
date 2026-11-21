@@ -1,5 +1,6 @@
 import { hiddenForLowerRoles, isAtLeastWriter } from '@/access'
 import { GlobalConfig } from 'payload'
+import { richTextHtml } from '@/fields/richTextHtml'
 
 export const Index: GlobalConfig = {
   slug: 'index',
@@ -31,12 +32,14 @@ export const Index: GlobalConfig = {
         },
       },
     },
+    richTextHtml('intro'),
     {
       name: 'donation',
       type: 'richText',
       localized: true,
       label: { de: 'Spendentext', en: 'Donation text' },
     },
+    richTextHtml('donation'),
     {
       name: 'donationBox',
       type: 'richText',
@@ -49,12 +52,14 @@ export const Index: GlobalConfig = {
         },
       },
     },
+    richTextHtml('donationBox'),
     {
       name: 'disclaimer',
       type: 'richText',
       localized: true,
       label: { de: 'Haftungshinweis', en: 'Disclaimer' },
     },
+    richTextHtml('disclaimer'),
     {
       name: 'learnHeader',
       type: 'text',

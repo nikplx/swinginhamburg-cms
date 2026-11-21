@@ -153,7 +153,7 @@ export const occurrencesEndpoint: Endpoint = {
         title: event.title,
         type: event.type as EventType,
         level: event.level,
-        description: event.description,
+        descriptionHtml: event.descriptionHtml ?? '',
         organizers: (event.organizers ?? []).map((organizer) =>
           typeof organizer === 'object' && organizer !== null
             ? {

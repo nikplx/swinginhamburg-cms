@@ -1,5 +1,6 @@
 import { hiddenForLowerRoles, isAtLeastWriter } from '@/access'
 import { GlobalConfig } from 'payload'
+import { richTextHtml } from '@/fields/richTextHtml'
 
 export const About: GlobalConfig = {
   slug: 'about',
@@ -19,5 +20,6 @@ export const About: GlobalConfig = {
       localized: true,
       label: { de: 'Inhalt', en: 'Content' },
     },
+    richTextHtml('content'),
   ],
 }

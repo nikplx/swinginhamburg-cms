@@ -19,6 +19,7 @@ import { scheduleProblems } from '@/lib/occurrences/schedule'
 import { validateExceptions } from '@/lib/occurrences/prune'
 import { isTimeString } from '@/lib/occurrences/time'
 import { CLASS_LIKE_TYPES, SCHEDULE_LIMITS, type EventType } from '@/lib/occurrences/types'
+import { richTextHtml } from '@/fields/richTextHtml'
 
 const timeField = (name: string, labelDe: string, labelEn: string): Field => ({
   name,
@@ -111,6 +112,7 @@ export const Events: CollectionConfig = {
       // No headings and no uploads in public descriptions.
       editor: simpleRichTextEditor,
     },
+    richTextHtml('description'),
     {
       name: 'organizers',
       type: 'relationship',

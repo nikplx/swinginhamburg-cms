@@ -206,6 +206,7 @@ export interface Organization {
     };
     [k: string]: unknown;
   } | null;
+  descriptionHtml?: string | null;
   /**
    * These users may edit the organization description. Linking is optional and managed by writers.
    */
@@ -284,6 +285,7 @@ export interface Dance {
     };
     [k: string]: unknown;
   } | null;
+  descriptionHtml?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -310,6 +312,7 @@ export interface Event {
     };
     [k: string]: unknown;
   } | null;
+  descriptionHtml?: string | null;
   /**
    * Select more than one for co-hosted events.
    */
@@ -558,6 +561,7 @@ export interface DancesSelect<T extends boolean = true> {
   shortName?: T;
   slug?: T;
   description?: T;
+  descriptionHtml?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -569,6 +573,7 @@ export interface EventsSelect<T extends boolean = true> {
   title?: T;
   type?: T;
   description?: T;
+  descriptionHtml?: T;
   organizers?: T;
   danceStyles?: T;
   level?: T;
@@ -665,6 +670,7 @@ export interface OrganizationsSelect<T extends boolean = true> {
   slug?: T;
   kind?: T;
   description?: T;
+  descriptionHtml?: T;
   members?: T;
   links?:
     | T
@@ -755,6 +761,7 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  introHtml?: string | null;
   donation?: {
     root: {
       type: string;
@@ -770,6 +777,7 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  donationHtml?: string | null;
   /**
    * Notice box on the homepage. The first sentence is used as the headline.
    */
@@ -788,6 +796,7 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  donationBoxHtml?: string | null;
   disclaimer?: {
     root: {
       type: string;
@@ -803,6 +812,7 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  disclaimerHtml?: string | null;
   learnHeader?: string | null;
   learnDescription?: string | null;
   updatedAt?: string | null;
@@ -829,6 +839,7 @@ export interface About {
     };
     [k: string]: unknown;
   } | null;
+  contentHtml?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -853,6 +864,7 @@ export interface Swing {
     };
     [k: string]: unknown;
   } | null;
+  whatIsSwingHtml?: string | null;
   howToLearn?: {
     root: {
       type: string;
@@ -868,6 +880,7 @@ export interface Swing {
     };
     [k: string]: unknown;
   } | null;
+  howToLearnHtml?: string | null;
   faq?: {
     root: {
       type: string;
@@ -883,6 +896,7 @@ export interface Swing {
     };
     [k: string]: unknown;
   } | null;
+  faqHtml?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -910,6 +924,7 @@ export interface SchoolsGlobal {
     };
     [k: string]: unknown;
   } | null;
+  howToLearnHtml?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -920,9 +935,13 @@ export interface SchoolsGlobal {
 export interface IndexSelect<T extends boolean = true> {
   subtitle?: T;
   intro?: T;
+  introHtml?: T;
   donation?: T;
+  donationHtml?: T;
   donationBox?: T;
+  donationBoxHtml?: T;
   disclaimer?: T;
+  disclaimerHtml?: T;
   learnHeader?: T;
   learnDescription?: T;
   updatedAt?: T;
@@ -935,6 +954,7 @@ export interface IndexSelect<T extends boolean = true> {
  */
 export interface AboutSelect<T extends boolean = true> {
   content?: T;
+  contentHtml?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -945,8 +965,11 @@ export interface AboutSelect<T extends boolean = true> {
  */
 export interface SwingSelect<T extends boolean = true> {
   whatIsSwing?: T;
+  whatIsSwingHtml?: T;
   howToLearn?: T;
+  howToLearnHtml?: T;
   faq?: T;
+  faqHtml?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -957,6 +980,7 @@ export interface SwingSelect<T extends boolean = true> {
  */
 export interface SchoolsGlobalSelect<T extends boolean = true> {
   howToLearn?: T;
+  howToLearnHtml?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

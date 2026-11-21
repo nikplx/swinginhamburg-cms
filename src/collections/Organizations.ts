@@ -8,6 +8,7 @@ import {
 import { locationGroup } from '@/fields/location'
 import { simpleRichTextEditor } from '@/fields/editors'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
+import { richTextHtml } from '@/fields/richTextHtml'
 
 /**
  * Organizers of events: dance schools, associations/collectives, solo DJs.
@@ -90,6 +91,7 @@ export const Organizations: CollectionConfig = {
       // writers/admin and linked members (see `organizationUpdate`), and the
       // description is intentionally the one field members may change.
     },
+    richTextHtml('description'),
     {
       name: 'members',
       type: 'relationship',
