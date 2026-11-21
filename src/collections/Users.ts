@@ -1,8 +1,12 @@
-import { canReadUser, isAdmin, isAdminField, isAtLeastWriter } from '@/access'
+import { canReadUser, hiddenForLowerRoles, isAdmin, isAdminField } from '@/access'
 import type { CollectionConfig } from 'payload'
 
 export const Users: CollectionConfig = {
   slug: 'users',
+  labels: {
+    singular: { de: 'Benutzer', en: 'User' },
+    plural: { de: 'Benutzer', en: 'Users' },
+  },
   access: {
     read: canReadUser,
     update: isAdmin,
@@ -10,7 +14,9 @@ export const Users: CollectionConfig = {
     delete: isAdmin,
   },
   admin: {
+    hidden: hiddenForLowerRoles,
     useAsTitle: 'email',
+    group: { de: 'Verwaltung', en: 'Administration' },
   },
   auth: {
     useAPIKey: true,
@@ -26,7 +32,7 @@ export const Users: CollectionConfig = {
 
         return `
           <h1>Welcome, ${user.email}!</h1>
-          <p>You have been invited to manage your dancing school's bio and class schedule.</p>
+          <p>You have been invited to manage your organization's description and events.</p>
           <p><a href="${setupURL}">Click here to set your password and activate your account</a></p>
         `
       },
@@ -63,9 +69,35 @@ export const Users: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'guest',
-      options: ['system', 'admin', 'writer', 'school', 'guest'],
+      label: { de: 'Rolle', en: 'Role' },
+      options: [
+        { value: 'admin', label: { de: 'Administrator:in', en: 'Admin' } },
+        { value: 'writer', label: { de: 'Redakteur:in', en: 'Writer' } },
+        { value: 'school', label: { de: 'Schule', en: 'School' } },
+        { value: 'guest', label: { de: 'Gast', en: 'Guest' } },
+      ],
       access: {
         update: isAdminField,
+      },
+      admin: {
+        description: {
+          de: 'Redakteur:innen und Administrator:innen verwalten alle Inhalte. Schulen und Gäste sehen nur ihre eigenen Organisationen und deren Veranstaltungen.',
+          en: 'Writers and admins manage all content. Schools and guests only see their own organizations and their events.',
+        },
+      },
+    },
+    {
+      name: 'organizations',
+      type: 'join',
+      collection: 'organizations',
+      on: 'members',
+      label: { de: 'Organisationen', en: 'Organizations' },
+      admin: {
+        defaultColumns: ['name', 'kind'],
+        description: {
+          de: 'Organisationen, deren Beschreibung dieser Benutzer bearbeiten darf.',
+          en: 'Organizations whose description this user may edit.',
+        },
       },
     },
   ],

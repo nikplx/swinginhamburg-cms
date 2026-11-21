@@ -69,25 +69,25 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    classes: Class;
-    schools: School;
-    teachers: Teacher;
     dances: Dance;
     events: Event;
+    organizations: Organization;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    users: {
+      organizations: 'organizations';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    classes: ClassesSelect<false> | ClassesSelect<true>;
-    schools: SchoolsSelect<false> | SchoolsSelect<true>;
-    teachers: TeachersSelect<false> | TeachersSelect<true>;
     dances: DancesSelect<false> | DancesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -143,17 +143,30 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  role: 'system' | 'admin' | 'writer' | 'school' | 'guest';
+  /**
+   * Writers and admins manage all content. Schools and guests only see their own organizations and their events.
+   */
+  role: 'admin' | 'writer' | 'school' | 'guest';
+  /**
+   * Organizations whose description this user may edit.
+   */
+  organizations?: {
+    docs?: (number | Organization)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
+  hasAPIKey?: boolean | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -168,10 +181,70 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  name: string;
+  /**
+   * Short name used in links, e.g. "swing-in-hamburg".
+   */
+  slug: string;
+  kind: 'school' | 'association' | 'individual' | 'other';
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  descriptionHtml?: string | null;
+  /**
+   * These users may edit the organization description. Linking is optional and managed by writers.
+   */
+  members?: (number | User)[] | null;
+  links?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  defaultLocation?: {
+    name?: string | null;
+    street?: string | null;
+    houseNumber?: string | null;
+    postcode?: string | null;
+    city?: string | null;
+    district?: string | null;
+    /**
+     * Composed from the fields above.
+     */
+    address?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    directionsNote?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: number;
+  /**
+   * Short image description for screen readers and search engines.
+   */
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -187,89 +260,16 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "classes".
- */
-export interface Class {
-  id: number;
-  title?: string | null;
-  description?: string | null;
-  weekday: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
-  cancelled?: string | null;
-  school: number | School;
-  teachers?: (number | Teacher)[] | null;
-  dances?: (number | Dance)[] | null;
-  locationName?: string | null;
-  address: string;
-  /**
-   * @minItems 2
-   * @maxItems 2
-   */
-  location: [number, number];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "schools".
- */
-export interface School {
-  id: number;
-  name: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  website?: string | null;
-  teachers?: (number | Teacher)[] | null;
-  owner?: (number | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "teachers".
- */
-export interface Teacher {
-  id: number;
-  name: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  email?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dances".
  */
 export interface Dance {
   id: number;
   name: string;
+  /**
+   * Used for filters and anchors, e.g. "Lindy Hop".
+   */
   shortName: string;
+  slug: string;
   description?: {
     root: {
       type: string;
@@ -285,6 +285,7 @@ export interface Dance {
     };
     [k: string]: unknown;
   } | null;
+  descriptionHtml?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -294,8 +295,8 @@ export interface Dance {
  */
 export interface Event {
   id: number;
-  type: 'Workshop' | 'Social';
   title: string;
+  type: 'social' | 'event' | 'class';
   description?: {
     root: {
       type: string;
@@ -311,39 +312,112 @@ export interface Event {
     };
     [k: string]: unknown;
   } | null;
+  descriptionHtml?: string | null;
   /**
-   * The day the class/party begins.
+   * Select more than one for co-hosted events.
    */
-  startDate: string;
+  organizers: (number | Organization)[];
+  danceStyles?: (number | Dance)[] | null;
+  level?: ('all' | 'beginner' | 'intermediate' | 'advanced' | 'open') | null;
+  location?: {
+    name?: string | null;
+    street?: string | null;
+    houseNumber?: string | null;
+    postcode?: string | null;
+    city?: string | null;
+    district?: string | null;
+    /**
+     * Composed from the fields above.
+     */
+    address?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    directionsNote?: string | null;
+  };
+  schedule: (
+    | {
+        date: string;
+        startTime?: string | null;
+        endTime?: string | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'once';
+      }
+    | {
+        dates: {
+          date: string;
+          startTime?: string | null;
+          endTime?: string | null;
+          id?: string | null;
+        }[];
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'dates';
+      }
+    | {
+        frequency: 'weekly' | 'monthly';
+        /**
+         * Every N weeks or months (1 = every week / month).
+         */
+        interval?: number | null;
+        weekdays?: ('MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU')[] | null;
+        monthlyMode?: ('dayOfMonth' | 'nthWeekday') | null;
+        dayOfMonth?: number | null;
+        nthWeekday?: ('1' | '2' | '3' | '4' | '-1') | null;
+        weekday?: ('MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU') | null;
+        startDate: string;
+        startTime?: string | null;
+        endTime?: string | null;
+        endMode: 'never' | 'until' | 'count';
+        until?: string | null;
+        count?: number | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'recurring';
+      }
+    | {
+        startDate: string;
+        weekday: 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
+        startTime?: string | null;
+        endTime?: string | null;
+        sessions: number;
+        /**
+         * Skipped dates do not reduce the session count.
+         */
+        skipDates?:
+          | {
+              date: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'course';
+      }
+  )[];
   /**
-   * Optional. Enter local time (e.g., 20:30).
+   * Maintained by the preview: keyed by local date (YYYY-MM-DD).
    */
-  startTime?: string | null;
+  exceptions?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
-   * Optional. Only needed if it ends on a different day.
+   * Derived, do not edit.
    */
-  endDate?: string | null;
+  firstDate?: string | null;
   /**
-   * Optional. Enter local time (e.g., 03:00).
+   * Empty for open-ended series.
    */
-  endTime?: string | null;
-  dances?: (number | Dance)[] | null;
-  /**
-   * Enter the price in Euros (e.g., 15.50).
-   */
-  price?: number | null;
-  cancelled?: string | null;
-  url?: string | null;
-  backgroundImage?: (number | null) | Media;
-  locationName?: string | null;
-  address: string;
-  /**
-   * @minItems 2
-   * @maxItems 2
-   */
-  location: [number, number];
+  lastDate?: string | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -378,24 +452,16 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'classes';
-        value: number | Class;
-      } | null)
-    | ({
-        relationTo: 'schools';
-        value: number | School;
-      } | null)
-    | ({
-        relationTo: 'teachers';
-        value: number | Teacher;
-      } | null)
-    | ({
         relationTo: 'dances';
         value: number | Dance;
       } | null)
     | ({
         relationTo: 'events';
         value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'organizations';
+        value: number | Organization;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -445,16 +511,19 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   role?: T;
+  organizations?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
   apiKey?: T;
   apiKeyIndex?: T;
+  hasAPIKey?: T;
   email?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  resetPasswordRequestedAt?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -485,54 +554,14 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "classes_select".
- */
-export interface ClassesSelect<T extends boolean = true> {
-  title?: T;
-  description?: T;
-  weekday?: T;
-  cancelled?: T;
-  school?: T;
-  teachers?: T;
-  dances?: T;
-  locationName?: T;
-  address?: T;
-  location?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "schools_select".
- */
-export interface SchoolsSelect<T extends boolean = true> {
-  name?: T;
-  description?: T;
-  website?: T;
-  teachers?: T;
-  owner?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "teachers_select".
- */
-export interface TeachersSelect<T extends boolean = true> {
-  name?: T;
-  description?: T;
-  email?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dances_select".
  */
 export interface DancesSelect<T extends boolean = true> {
   name?: T;
   shortName?: T;
+  slug?: T;
   description?: T;
+  descriptionHtml?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -541,21 +570,129 @@ export interface DancesSelect<T extends boolean = true> {
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
-  type?: T;
   title?: T;
+  type?: T;
   description?: T;
-  startDate?: T;
-  startTime?: T;
-  endDate?: T;
-  endTime?: T;
-  dances?: T;
-  price?: T;
-  cancelled?: T;
-  url?: T;
-  backgroundImage?: T;
-  locationName?: T;
-  address?: T;
-  location?: T;
+  descriptionHtml?: T;
+  organizers?: T;
+  danceStyles?: T;
+  level?: T;
+  location?:
+    | T
+    | {
+        name?: T;
+        street?: T;
+        houseNumber?: T;
+        postcode?: T;
+        city?: T;
+        district?: T;
+        address?: T;
+        lat?: T;
+        lng?: T;
+        directionsNote?: T;
+      };
+  schedule?:
+    | T
+    | {
+        once?:
+          | T
+          | {
+              date?: T;
+              startTime?: T;
+              endTime?: T;
+              id?: T;
+              blockName?: T;
+            };
+        dates?:
+          | T
+          | {
+              dates?:
+                | T
+                | {
+                    date?: T;
+                    startTime?: T;
+                    endTime?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        recurring?:
+          | T
+          | {
+              frequency?: T;
+              interval?: T;
+              weekdays?: T;
+              monthlyMode?: T;
+              dayOfMonth?: T;
+              nthWeekday?: T;
+              weekday?: T;
+              startDate?: T;
+              startTime?: T;
+              endTime?: T;
+              endMode?: T;
+              until?: T;
+              count?: T;
+              id?: T;
+              blockName?: T;
+            };
+        course?:
+          | T
+          | {
+              startDate?: T;
+              weekday?: T;
+              startTime?: T;
+              endTime?: T;
+              sessions?: T;
+              skipDates?:
+                | T
+                | {
+                    date?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  exceptions?: T;
+  firstDate?: T;
+  lastDate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations_select".
+ */
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  kind?: T;
+  description?: T;
+  descriptionHtml?: T;
+  members?: T;
+  links?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  defaultLocation?:
+    | T
+    | {
+        name?: T;
+        street?: T;
+        houseNumber?: T;
+        postcode?: T;
+        city?: T;
+        district?: T;
+        address?: T;
+        lat?: T;
+        lng?: T;
+        directionsNote?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -606,6 +743,9 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface Index {
   id: number;
   subtitle?: string | null;
+  /**
+   * Greeting text in the sidebar.
+   */
   intro?: {
     root: {
       type: string;
@@ -621,6 +761,7 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  introHtml?: string | null;
   donation?: {
     root: {
       type: string;
@@ -636,6 +777,10 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  donationHtml?: string | null;
+  /**
+   * Notice box on the homepage. The first sentence is used as the headline.
+   */
   donationBox?: {
     root: {
       type: string;
@@ -651,6 +796,7 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  donationBoxHtml?: string | null;
   disclaimer?: {
     root: {
       type: string;
@@ -666,6 +812,7 @@ export interface Index {
     };
     [k: string]: unknown;
   } | null;
+  disclaimerHtml?: string | null;
   learnHeader?: string | null;
   learnDescription?: string | null;
   updatedAt?: string | null;
@@ -692,6 +839,7 @@ export interface About {
     };
     [k: string]: unknown;
   } | null;
+  contentHtml?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -716,6 +864,7 @@ export interface Swing {
     };
     [k: string]: unknown;
   } | null;
+  whatIsSwingHtml?: string | null;
   howToLearn?: {
     root: {
       type: string;
@@ -731,6 +880,7 @@ export interface Swing {
     };
     [k: string]: unknown;
   } | null;
+  howToLearnHtml?: string | null;
   faq?: {
     root: {
       type: string;
@@ -746,6 +896,7 @@ export interface Swing {
     };
     [k: string]: unknown;
   } | null;
+  faqHtml?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -755,6 +906,9 @@ export interface Swing {
  */
 export interface SchoolsGlobal {
   id: number;
+  /**
+   * Introductory text on the organizations page.
+   */
   howToLearn?: {
     root: {
       type: string;
@@ -770,6 +924,7 @@ export interface SchoolsGlobal {
     };
     [k: string]: unknown;
   } | null;
+  howToLearnHtml?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -780,9 +935,13 @@ export interface SchoolsGlobal {
 export interface IndexSelect<T extends boolean = true> {
   subtitle?: T;
   intro?: T;
+  introHtml?: T;
   donation?: T;
+  donationHtml?: T;
   donationBox?: T;
+  donationBoxHtml?: T;
   disclaimer?: T;
+  disclaimerHtml?: T;
   learnHeader?: T;
   learnDescription?: T;
   updatedAt?: T;
@@ -795,6 +954,7 @@ export interface IndexSelect<T extends boolean = true> {
  */
 export interface AboutSelect<T extends boolean = true> {
   content?: T;
+  contentHtml?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -805,8 +965,11 @@ export interface AboutSelect<T extends boolean = true> {
  */
 export interface SwingSelect<T extends boolean = true> {
   whatIsSwing?: T;
+  whatIsSwingHtml?: T;
   howToLearn?: T;
+  howToLearnHtml?: T;
   faq?: T;
+  faqHtml?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -817,6 +980,7 @@ export interface SwingSelect<T extends boolean = true> {
  */
 export interface SchoolsGlobalSelect<T extends boolean = true> {
   howToLearn?: T;
+  howToLearnHtml?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

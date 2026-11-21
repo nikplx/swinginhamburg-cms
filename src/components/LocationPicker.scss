@@ -1,0 +1,43 @@
+.location-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .location-picker__results {
+    display: flex;
+    flex-direction: column;
+    max-height: 16rem;
+    overflow-y: auto;
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: 4px;
+    background: var(--theme-bg);
+  }
+
+  // Plain buttons (not Payload's Button): its `.btn` margin-block would add
+  // ~24px above and below every row and space the list far apart.
+  .location-picker__result {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--theme-text);
+    font: inherit;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    cursor: pointer;
+
+    & + .location-picker__result {
+      border-top: 1px solid var(--theme-elevation-100);
+    }
+
+    &:hover,
+    &:focus-visible {
+      outline: none;
+      background: var(--theme-elevation-100);
+    }
+  }
+}

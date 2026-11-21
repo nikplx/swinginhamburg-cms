@@ -1,4 +1,4 @@
-import { Access, FieldAccess } from 'payload'
+import { Access, FieldAccess, Where } from 'payload'
 
 const ALL_ROLES = ['admin', 'writer', 'school', 'guest'] as const
 
@@ -10,8 +10,12 @@ const grantIf = <T extends Access | FieldAccess>(...roles: UserRole[]): T => {
   return (({ req: { user } }: any) => checkRole(user, roles)) as T
 }
 
+/** Writers and admins manage content; everyone else only edits their own organization. */
+export const isAtLeastWriterUser = (user: any): boolean =>
+  user?.role === 'admin' || user?.role === 'writer'
+
 export const canReadUser: Access = ({ req: { user } }) => {
-  if (user?.role === 'admin' || user?.role === 'writer') return true
+  if (isAtLeastWriterUser(user)) return true
 
   if (user) {
     return {
@@ -24,95 +28,87 @@ export const canReadUser: Access = ({ req: { user } }) => {
   return false
 }
 
-export const isOwnerOrStaff: Access = ({ req: { user } }) => {
-  if (!user) return false
+// ---------------------------------------------------------------------------
+// Events / organizations / dance styles
+// ---------------------------------------------------------------------------
 
-  if (user.role === 'admin' || user.role === 'writer') return true
+/** Any logged-in user, regardless of role. */
+export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
-  return {
-    owner: {
-      equals: user.id,
-    },
-  }
-}
+/**
+ * Organizations and dance styles are public reference data. Organization
+ * `members` stays hidden through field-level access.
+ */
+export const publicRead: Access = () => true
 
-export const canCreateClass: Access = async ({ req, data }) => {
-  const user = req.user
-  if (!user) return false
-
-  // Admins and Writers can create classes for any school
-  if (user.role === 'admin' || user.role === 'writer') return true
-  if (user.role !== 'school') return false
-
-  const schoolId = data?.school
-
-  // === THE NEW FIX ===
-  // If no school is provided yet (e.g., loading the form or evaluating UI access),
-  // allow it to pass. Payload's schema validation will prevent actual database 
-  // inserts if the user leaves the required 'school' field blank.
-  if (!schoolId) return true 
-
-  // If a school IS provided, verify they own it before allowing the save
-  try {
-    const school = await req.payload.findByID({
-      collection: 'schools',
-      id: schoolId,
-      depth: 0,
-    })
-
-    const ownerId = typeof school.owner === 'object' ? school.owner?.id : school.owner
-    return ownerId === user.id
-  } catch (error) {
-    return false
-  }
-}
-
-// 2. Check if the user can UPDATE, DELETE, or READ their own classes
-export const canManageClass: Access = async ({ req }) => {
-  const user = req.user
-  if (!user) return false
-
-  // Admins and Writers have unrestricted access
-  if (user.role === 'admin' || user.role === 'writer') return true
-  if (user.role !== 'school') return false
-
-  // Find all schools owned by this specific user
-  const ownedSchools = await req.payload.find({
-    collection: 'schools',
-    req,
-    where: {
-      owner: {
-        equals: user.id,
-      },
-    },
+/** IDs of the organizations a user is linked to. */
+export const memberOrganizationIDs = async (req: any): Promise<(number | string)[]> => {
+  const result = await req.payload.find({
+    collection: 'organizations',
+    where: { members: { equals: req.user.id } },
     depth: 0,
-    pagination: false, // Ensure we get ALL their schools, not just the first 10
+    pagination: false,
+    select: { id: true },
+    req,
+    overrideAccess: true,
   })
-
-  // Extract just the IDs
-  const schoolIds = ownedSchools.docs.map((doc) => doc.id)
-
-  // If they own no schools, they can manage no classes
-  if (schoolIds.length === 0) return false
-
-  // Return a query constraint: The class's 'school' field MUST be in their list of owned schools
-  return {
-    school: {
-      in: schoolIds,
-    },
-  }
+  return result.docs.map((doc: { id: number | string }) => doc.id)
 }
 
-export const isOwnerOrStaffField: FieldAccess = ({ req: { user }, doc }) => {
-  if (user?.role === 'admin' || user?.role === 'writer') return true
+const PUBLISHED: Where = { _status: { equals: 'published' } }
 
-  return doc?.owner === user?.id || (typeof doc?.owner === 'object' && doc.owner?.id === user?.id)
+/**
+ * Writers/admins: every event. Linked users: events of their organizations
+ * (drafts included, because that is what they edit). Everyone else: nothing.
+ */
+const memberScope = async (req: any): Promise<boolean | Where> => {
+  const user = req.user
+  if (!user) return false
+  if (isAtLeastWriterUser(user)) return true
+
+  const organizationIDs = await memberOrganizationIDs(req)
+  return organizationIDs.length ? { organizers: { in: organizationIDs } } : false
 }
 
-// Usage in Collections
+/** Anonymous visitors only ever see published events. */
+export const eventRead: Access = ({ req }) => (req.user ? memberScope(req) : PUBLISHED)
+
+/**
+ * Never derived from the read scope: a read constraint returned from a write
+ * rule would grant that write to everyone matching it, anonymous users included.
+ * Deleting co-hosted events is further restricted in `restrictEventDelete`.
+ */
+export const eventUpdate: Access = ({ req }) => memberScope(req)
+export const eventDelete: Access = ({ req }) => memberScope(req)
+
+/**
+ * Creating is open to authenticated users so the admin create view renders; the
+ * organizer scope itself is enforced in `enforceEventOrganizerScope`.
+ */
+export const eventCreate: Access = authenticated
+
+/** Writers/admins edit any organization; members only their own. */
+export const organizationUpdate: Access = ({ req: { user } }) => {
+  if (!user) return false
+  if (isAtLeastWriterUser(user)) return true
+  return { members: { equals: user.id } }
+}
+
+/**
+ * Hides collections and globals from the admin navigation for roles below
+ * writer. They keep access to organizations and events only.
+ */
+export const hiddenForLowerRoles = ({ user }: { user?: any }): boolean =>
+  !isAtLeastWriterUser(user)
+
+// ---------------------------------------------------------------------------
+// Role helpers
+// ---------------------------------------------------------------------------
+
+// Collection access
 export const isAdmin = grantIf<Access>('admin')
 export const isAtLeastWriter = grantIf<Access>('admin', 'writer')
 
-// Usage in Fields
+// Field access
 export const isAdminField = grantIf<FieldAccess>('admin')
 export const isAtLeastWriterField = grantIf<FieldAccess>('admin', 'writer')
