@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated, hiddenForLowerRoles, publicRead } from '@/access'
+import { hiddenForLowerRoles, isAtLeastWriter, publicRead } from '@/access'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
 
 /**
@@ -14,9 +14,9 @@ export const Dances: CollectionConfig = {
   slug: 'dances',
   access: {
     read: publicRead,
-    create: authenticated,
-    update: authenticated,
-    delete: authenticated,
+    create: isAtLeastWriter,
+    update: isAtLeastWriter,
+    delete: isAtLeastWriter,
   },
   admin: {
     hidden: hiddenForLowerRoles,

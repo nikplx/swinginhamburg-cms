@@ -13,6 +13,7 @@ import * as migration_20261118_161637_organization_members from './20261118_1616
 import * as migration_20261118_190455_organization_description_richtext from './20261118_190455_organization_description_richtext';
 import * as migration_20261118_190937_event_type_options from './20261118_190937_event_type_options';
 import * as migration_20261118_212710_remove_workshop_type from './20261118_212710_remove_workshop_type';
+import * as migration_20261121_135132_remove_system_role_last_confirmed from './20261121_135132_remove_system_role_last_confirmed';
 
 export const migrations = [
   {
@@ -88,6 +89,11 @@ export const migrations = [
   {
     up: migration_20261118_212710_remove_workshop_type.up,
     down: migration_20261118_212710_remove_workshop_type.down,
-    name: '20261118_212710_remove_workshop_type'
+    name: '20261118_212710_remove_workshop_type',
+  },
+  {
+    up: migration_20261121_135132_remove_system_role_last_confirmed.up,
+    down: migration_20261121_135132_remove_system_role_last_confirmed.down,
+    name: '20261121_135132_remove_system_role_last_confirmed'
   },
 ];

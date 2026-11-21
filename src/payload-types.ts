@@ -146,7 +146,7 @@ export interface User {
   /**
    * Writers and admins manage all content. Schools and guests only see their own organizations and their events.
    */
-  role: 'system' | 'admin' | 'writer' | 'school' | 'guest';
+  role: 'admin' | 'writer' | 'school' | 'guest';
   /**
    * Organizations whose description this user may edit.
    */
@@ -400,10 +400,6 @@ export interface Event {
    * Empty for open-ended series.
    */
   lastDate?: string | null;
-  /**
-   * For open-ended series: when the organizer last checked the schedule.
-   */
-  lastConfirmed?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -637,7 +633,6 @@ export interface EventsSelect<T extends boolean = true> {
   exceptions?: T;
   firstDate?: T;
   lastDate?: T;
-  lastConfirmed?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

@@ -11,6 +11,13 @@ export type EventType = (typeof EVENT_TYPES)[number]
 /** Types where a dance style is mandatory and a level is shown. */
 export const CLASS_LIKE_TYPES: readonly EventType[] = ['class']
 
+/**
+ * Upper bounds for schedule numbers. Enforced on the fields, in
+ * `scheduleProblems` and (as a clamp) in the expansion itself, because drafts
+ * skip field validation and must still never trigger unbounded work.
+ */
+export const SCHEDULE_LIMITS = { interval: 12, count: 500, sessions: 52 } as const
+
 export const WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
 export type WeekdayCode = (typeof WEEKDAYS)[number]
 
@@ -94,5 +101,7 @@ export interface Occurrence {
   /** UTC instant, ISO 8601. */
   end: string
   cancelled: boolean
+  /** No start time configured: `start`/`end` are local midnight placeholders. */
+  allDay: boolean
   note?: string
 }

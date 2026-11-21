@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import {
   isAtLeastWriter,
   isAtLeastWriterField,
-  organizationRead,
+  publicRead,
   organizationUpdate,
 } from '@/access'
 import { locationGroup } from '@/fields/location'
@@ -30,7 +30,7 @@ export const Organizations: CollectionConfig = {
     defaultColumns: ['name', 'kind', 'slug'],
   },
   access: {
-    read: organizationRead,
+    read: publicRead,
     create: isAtLeastWriter,
     update: organizationUpdate,
     delete: isAtLeastWriter,

@@ -1,7 +1,7 @@
 import type { Endpoint, PayloadRequest, Where } from 'payload'
 import { expand } from '@/lib/occurrences/expand'
 import { getCached, setCached } from '@/lib/occurrences/cache'
-import { addLocalDays, isDateString, todayLocal } from '@/lib/occurrences/time'
+import { addLocalDays, daysBetween, isDateString, todayLocal } from '@/lib/occurrences/time'
 import type { ExceptionsMap, Occurrence } from '@/lib/occurrences/types'
 import { EVENT_TYPES, type EventType } from '@/lib/occurrences/types'
 
@@ -33,10 +33,10 @@ export interface PublicOccurrence extends Occurrence {
   event: PublicEventSummary
 }
 
-const asId = (value: unknown): number | string | undefined =>
-  typeof value === 'object' && value !== null
-    ? ((value as any).id as number | string)
-    : (value as number | string | undefined)
+/** The frontend calendar asks for 12 months starting on the 1st of a month. */
+const MAX_RANGE_DAYS = 400
+const LOCALES = ['de', 'en'] as const
+type Locale = (typeof LOCALES)[number]
 
 async function resolveRelationId(
   req: PayloadRequest,
@@ -69,6 +69,12 @@ export const occurrencesEndpoint: Endpoint = {
     if (to < from) {
       return Response.json({ error: '"to" must be on or after "from"' }, { status: 400 })
     }
+    if (daysBetween(from, to) > MAX_RANGE_DAYS) {
+      return Response.json(
+        { error: `the range must not exceed ${MAX_RANGE_DAYS} days` },
+        { status: 400 },
+      )
+    }
 
     const typeParam = first(query.type)
     const type = EVENT_TYPES.includes(typeParam as EventType)
@@ -76,7 +82,9 @@ export const occurrencesEndpoint: Endpoint = {
       : undefined
     const danceStyleParam = first(query.danceStyle) ?? first(query.danceStyleId)
     const organizationParam = first(query.organization) ?? first(query.organizationId)
-    const locale = String(first(query.locale) ?? 'de')
+    const localeParam = first(query.locale)
+    const locale: Locale = LOCALES.includes(localeParam as Locale) ? (localeParam as Locale) : 'de'
+
 
     const danceStyleId = danceStyleParam
       ? await resolveRelationId(req, 'dances', String(danceStyleParam))
@@ -84,6 +92,14 @@ export const occurrencesEndpoint: Endpoint = {
     const organizationId = organizationParam
       ? await resolveRelationId(req, 'organizations', String(organizationParam))
       : undefined
+
+    // An unknown slug/ID must not silently disable the filter.
+    if (
+      (danceStyleParam && danceStyleId === undefined) ||
+      (organizationParam && organizationId === undefined)
+    ) {
+      return Response.json({ occurrences: [] })
+    }
 
     const cacheKey = JSON.stringify({
       from,
@@ -128,7 +144,7 @@ export const occurrencesEndpoint: Endpoint = {
       where: { and },
       depth: 1,
       pagination: false,
-      locale: locale as any,
+      locale,
       req,
     })
 

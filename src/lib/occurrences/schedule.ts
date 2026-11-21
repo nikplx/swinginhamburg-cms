@@ -22,6 +22,7 @@ import {
   toLocalDateValue,
   utcShapeToLocalDate,
 } from './time'
+import { SCHEDULE_LIMITS } from './types'
 import type {
   CourseBlock,
   DatesBlock,
@@ -29,6 +30,7 @@ import type {
   RecurringBlock,
   ScheduleBlock,
   ScheduleValue,
+  RecurrenceEndMode,
   TimeString,
   WeekdayCode,
 } from './types'
@@ -52,6 +54,8 @@ export function weekdayCodeForDate(date: string): WeekdayCode {
 export interface OccurrenceTimes {
   startTime: TimeString
   endTime: TimeString
+  /** False when no start time is configured and `startTime` is a placeholder. */
+  hasTime: boolean
 }
 
 export const DEFAULT_START_TIME = '00:00'
@@ -93,7 +97,10 @@ function firstMatchingDate(block: RecurringBlock): string {
 
 /** Sessions of a course, with skipped dates omitted but the count preserved. */
 export function courseDates(block: CourseBlock): string[] {
-  const sessions = Math.max(0, Math.floor(Number(block.sessions) || 0))
+  const sessions = Math.min(
+    SCHEDULE_LIMITS.sessions,
+    Math.max(0, Math.floor(Number(block.sessions) || 0)),
+  )
   const startDate = toLocalDateValue(block.startDate)
   if (!sessions || !startDate) return []
 
@@ -156,7 +163,10 @@ export function buildRuleset(block: ScheduleBlock): RRuleSetClass {
 
   const options: ConstructorParameters<typeof RRule>[0] = {
     dtstart: localDateToUtcShape(dtstart),
-    interval: Math.max(1, Math.floor(Number(block.interval) || 1)),
+    interval: Math.min(
+      SCHEDULE_LIMITS.interval,
+      Math.max(1, Math.floor(Number(block.interval) || 1)),
+    ),
   }
 
   if (block.frequency === 'weekly') {
@@ -174,14 +184,20 @@ export function buildRuleset(block: ScheduleBlock): RRuleSetClass {
   }
 
   const until = toLocalDateValue(block.until)
-  if (block.endMode === 'until' && until) {
+  const endMode = recurrenceEndMode(block)
+  if (endMode === 'until' && until) {
     options.until = endOfLocalDay(until)
-  } else if (block.endMode === 'count' && Number(block.count) > 0) {
-    options.count = Math.floor(Number(block.count))
+  } else if (endMode === 'count' && Number(block.count) > 0) {
+    options.count = Math.min(SCHEDULE_LIMITS.count, Math.floor(Number(block.count)))
   }
 
   set.rrule(new RRule(options))
   return set
+}
+
+/** Missing or unknown end modes (API writes, old drafts) mean "never". */
+export function recurrenceEndMode(block: RecurringBlock): RecurrenceEndMode {
+  return block.endMode === 'until' || block.endMode === 'count' ? block.endMode : 'never'
 }
 
 /** All local dates the schedule produces inside [from, to] (inclusive). */
@@ -209,7 +225,9 @@ export function timesForDate(
   date: string,
 ): OccurrenceTimes {
   const block = getBlock(schedule)
-  if (!block) return { startTime: DEFAULT_START_TIME, endTime: DEFAULT_START_TIME }
+  if (!block) {
+    return { startTime: DEFAULT_START_TIME, endTime: DEFAULT_START_TIME, hasTime: false }
+  }
 
   let startTime: null | string | undefined
   let endTime: null | string | undefined
@@ -230,9 +248,10 @@ export function timesForDate(
     endTime = block.endTime
   }
 
+  const hasTime = isTimeString(startTime)
   const safeStart = isTimeString(startTime) ? startTime : DEFAULT_START_TIME
   const safeEnd = isTimeString(endTime) ? endTime : safeStart
-  return { startTime: safeStart, endTime: safeEnd }
+  return { startTime: safeStart, endTime: safeEnd, hasTime }
 }
 
 export interface FirstLast {
@@ -273,11 +292,12 @@ export function firstAndLast(schedule: ScheduleValue | undefined): FirstLast {
   const first = set.after(epoch, true)
   if (!first) return { firstDate: null, lastDate: null }
 
-  if (block.endMode === 'never') {
+  const endMode = recurrenceEndMode(block)
+  if (endMode === 'never') {
     return { firstDate: utcShapeToLocalDate(first), lastDate: null }
   }
 
-  if (block.endMode === 'until') {
+  if (endMode === 'until') {
     const until = toLocalDateValue(block.until)
     const last = until ? set.before(endOfLocalDay(until), true) : null
     return {
@@ -286,6 +306,7 @@ export function firstAndLast(schedule: ScheduleValue | undefined): FirstLast {
     }
   }
 
+  // Bounded by SCHEDULE_LIMITS.count, see buildRuleset.
   const all = set.all()
   return {
     firstDate: utcShapeToLocalDate(first),
@@ -308,6 +329,11 @@ export function scheduleProblems(schedule: ScheduleValue | undefined): string[] 
   } else if (block.blockType === 'course') {
     if (!toLocalDateValue(block.startDate)) problems.push('Startdatum fehlt / start date missing')
     if (!(Number(block.sessions) > 0)) problems.push('Anzahl Termine / number of sessions')
+    if (Number(block.sessions) > SCHEDULE_LIMITS.sessions) {
+      problems.push(
+        `Höchstens ${SCHEDULE_LIMITS.sessions} Einheiten / at most ${SCHEDULE_LIMITS.sessions} sessions`,
+      )
+    }
   } else {
     if (!toLocalDateValue(block.startDate)) problems.push('Startdatum fehlt / start date missing')
     if (block.frequency === 'weekly' && !block.weekdays?.length) {
@@ -326,6 +352,16 @@ export function scheduleProblems(schedule: ScheduleValue | undefined): string[] 
     }
     if (block.endMode === 'count' && !(Number(block.count) > 0)) {
       problems.push('Anzahl fehlt / count missing')
+    }
+    if (block.endMode === 'count' && Number(block.count) > SCHEDULE_LIMITS.count) {
+      problems.push(
+        `Höchstens ${SCHEDULE_LIMITS.count} Termine / at most ${SCHEDULE_LIMITS.count} occurrences`,
+      )
+    }
+    if (Number(block.interval) > SCHEDULE_LIMITS.interval) {
+      problems.push(
+        `Intervall höchstens ${SCHEDULE_LIMITS.interval} / interval at most ${SCHEDULE_LIMITS.interval}`,
+      )
     }
   }
 

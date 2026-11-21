@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { expand } from '@/lib/occurrences/expand'
 import { keysLostByPruning, pruneExceptions } from '@/lib/occurrences/prune'
-import { firstAndLast, datesBetween } from '@/lib/occurrences/schedule'
+import { courseDates, firstAndLast, datesBetween, scheduleProblems } from '@/lib/occurrences/schedule'
+import { daysBetween } from '@/lib/occurrences/time'
+import { SCHEDULE_LIMITS } from '@/lib/occurrences/types'
 import type {
   CourseBlock,
   ExceptionsMap,
@@ -173,10 +175,16 @@ describe('pruning', () => {
     expect(pruneExceptions([monday], exceptions, '2026-01-01')).toEqual(exceptions)
   })
 
-  it('drops keys in the past', () => {
+  it('keeps recent past keys so month views still show cancellations', () => {
+    const monday = recurring({ weekdays: ['MO'], startDate: '2026-01-05' })
+    const exceptions: ExceptionsMap = { '2026-01-05': { cancelled: true } }
+    expect(pruneExceptions([monday], exceptions, '2026-02-01')).toEqual(exceptions)
+  })
+
+  it('drops keys older than the retention window', () => {
     const monday = recurring({ weekdays: ['MO'], startDate: '2026-01-05' })
     expect(
-      pruneExceptions([monday], { '2026-01-05': { cancelled: true } }, '2026-02-01'),
+      pruneExceptions([monday], { '2026-01-05': { cancelled: true } }, '2026-06-01'),
     ).toEqual({})
   })
 })
@@ -223,6 +231,41 @@ describe('determinism', () => {
     expect(occurrence.start).toBe('2026-01-01T17:30:00.000Z')
     expect(occurrence.end).toBe('2026-01-01T19:00:00.000Z')
   })
+
+  it('keeps the regular duration when only the start time is overridden', () => {
+    // Regular 20:00–22:00; moved to 21:30 → 21:30–23:30, not "until 22:00 tomorrow".
+    const block = recurring({ startDate: '2026-01-01' })
+    const [occurrence] = expandBlock(
+      block,
+      { '2026-01-01': { startTime: '21:30' } },
+      '2026-01-01',
+      '2026-01-01',
+    )
+    expect(occurrence.start).toBe('2026-01-01T20:30:00.000Z')
+    expect(occurrence.end).toBe('2026-01-01T22:30:00.000Z')
+  })
+})
+
+describe('expand: all-day', () => {
+  it('flags occurrences without a start time', () => {
+    const block: OnceBlock = { blockType: 'once', date: '2026-06-01' }
+    const [occurrence] = expandBlock(block, {}, '2026-06-01', '2026-06-01')
+    expect(occurrence.allDay).toBe(true)
+  })
+
+  it('is not all-day when a time is configured or overridden', () => {
+    const timed: OnceBlock = { blockType: 'once', date: '2026-06-01', startTime: '20:00' }
+    expect(expandBlock(timed, {}, '2026-06-01', '2026-06-01')[0].allDay).toBe(false)
+
+    const untimed: OnceBlock = { blockType: 'once', date: '2026-06-01' }
+    const [overridden] = expandBlock(
+      untimed,
+      { '2026-06-01': { startTime: '19:00' } },
+      '2026-06-01',
+      '2026-06-01',
+    )
+    expect(overridden.allDay).toBe(false)
+  })
 })
 
 describe('prefilter bounds', () => {
@@ -248,5 +291,36 @@ describe('prefilter bounds', () => {
       '2026-01-08',
       '2026-01-15',
     ])
+  })
+})
+
+describe('robustness', () => {
+  it('treats a missing endMode as open-ended', () => {
+    const block = recurring({ endMode: undefined as any })
+    expect(firstAndLast([block])).toEqual({ firstDate: '2026-01-01', lastDate: null })
+  })
+
+  it('clamps oversized numbers even when validation was skipped', () => {
+    const course: CourseBlock = {
+      blockType: 'course',
+      startDate: '2026-01-05',
+      weekday: 'MO',
+      sessions: 2_000_000,
+    }
+    expect(courseDates(course)).toHaveLength(SCHEDULE_LIMITS.sessions)
+
+    const counted = recurring({ endMode: 'count', count: 200_000 })
+    const { lastDate } = firstAndLast([counted])
+    expect(daysBetween('2026-01-01', lastDate!)).toBe((SCHEDULE_LIMITS.count - 1) * 7)
+  })
+
+  it('reports oversized numbers as schedule problems', () => {
+    expect(scheduleProblems([recurring({ endMode: 'count', count: 501 })])).toHaveLength(1)
+    expect(scheduleProblems([recurring({ interval: 13 })])).toHaveLength(1)
+    expect(
+      scheduleProblems([
+        { blockType: 'course', startDate: '2026-01-05', weekday: 'MO', sessions: 53 },
+      ]),
+    ).toHaveLength(1)
   })
 })

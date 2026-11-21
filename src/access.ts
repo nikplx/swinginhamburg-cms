@@ -32,21 +32,14 @@ export const canReadUser: Access = ({ req: { user } }) => {
 // Events / organizations / dance styles
 // ---------------------------------------------------------------------------
 
-/** Any logged-in admin user may create, update or delete. */
+/** Any logged-in user, regardless of role. */
 export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
-/** Organizations and dance styles are public reference data. */
-export const publicRead: Access = () => true
-
 /**
- * Visitors and editors see every organization; members of an organization (and
- * other lower roles) only the ones they are linked to.
+ * Organizations and dance styles are public reference data. Organization
+ * `members` stays hidden through field-level access.
  */
-export const organizationRead: Access = ({ req: { user } }) => {
-  if (!user) return true
-  if (isAtLeastWriterUser(user)) return true
-  return { members: { equals: user.id } }
-}
+export const publicRead: Access = () => true
 
 /** IDs of the organizations a user is linked to. */
 export const memberOrganizationIDs = async (req: any): Promise<(number | string)[]> => {
@@ -62,26 +55,31 @@ export const memberOrganizationIDs = async (req: any): Promise<(number | string)
   return result.docs.map((doc: { id: number | string }) => doc.id)
 }
 
-const eventScope = async (req: any): Promise<boolean | Where> => {
+const PUBLISHED: Where = { _status: { equals: 'published' } }
+
+/**
+ * Writers/admins: every event. Linked users: events of their organizations
+ * (drafts included, because that is what they edit). Everyone else: nothing.
+ */
+const memberScope = async (req: any): Promise<boolean | Where> => {
   const user = req.user
-  if (!user) return { _status: { equals: 'published' } }
+  if (!user) return false
   if (isAtLeastWriterUser(user)) return true
 
   const organizationIDs = await memberOrganizationIDs(req)
-  if (!organizationIDs.length) return { id: { in: [] } }
-  return { organizers: { in: organizationIDs } }
+  return organizationIDs.length ? { organizers: { in: organizationIDs } } : false
 }
 
-/**
- * Anonymous visitors only ever see published events. Lower roles additionally
- * only see events of organizations they belong to; drafts included, because
- * that is what they edit.
- */
-export const eventRead: Access = ({ req }) => eventScope(req)
+/** Anonymous visitors only ever see published events. */
+export const eventRead: Access = ({ req }) => (req.user ? memberScope(req) : PUBLISHED)
 
-/** Lower roles may only change events of their own organizations. */
-export const eventUpdate: Access = ({ req }) => eventScope(req)
-export const eventDelete: Access = ({ req }) => eventScope(req)
+/**
+ * Never derived from the read scope: a read constraint returned from a write
+ * rule would grant that write to everyone matching it, anonymous users included.
+ * Deleting co-hosted events is further restricted in `restrictEventDelete`.
+ */
+export const eventUpdate: Access = ({ req }) => memberScope(req)
+export const eventDelete: Access = ({ req }) => memberScope(req)
 
 /**
  * Creating is open to authenticated users so the admin create view renders; the
@@ -104,13 +102,13 @@ export const hiddenForLowerRoles = ({ user }: { user?: any }): boolean =>
   !isAtLeastWriterUser(user)
 
 // ---------------------------------------------------------------------------
-// Legacy helpers still used by users/media
+// Role helpers
 // ---------------------------------------------------------------------------
 
-// Usage in Collections
+// Collection access
 export const isAdmin = grantIf<Access>('admin')
 export const isAtLeastWriter = grantIf<Access>('admin', 'writer')
 
-// Usage in Fields
+// Field access
 export const isAdminField = grantIf<FieldAccess>('admin')
 export const isAtLeastWriterField = grantIf<FieldAccess>('admin', 'writer')

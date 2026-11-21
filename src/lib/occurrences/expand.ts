@@ -27,19 +27,26 @@ export function expand(
     const base = timesForDate(event.schedule ?? undefined, date)
     const exception = exceptions[date] ?? {}
 
-    const startTime = isTimeString(exception.startTime)
-      ? exception.startTime
-      : base.startTime
-    const endTime = isTimeString(exception.endTime) ? exception.endTime : base.endTime
-
+    const startOverride = isTimeString(exception.startTime)
+    const endOverride = isTimeString(exception.endTime)
+    const startTime = startOverride ? exception.startTime! : base.startTime
     const start = zonedTimeToUtc(date, startTime)
-    // An end time earlier than the start time means the event runs past
-    // midnight, so it ends on the following local day.
-    const endDate =
-      minutesOfTime(endTime) < minutesOfTime(startTime)
-        ? addLocalDays(date, 1)
-        : date
-    const end = zonedTimeToUtc(endDate, endTime)
+
+    let end: Date
+    if (startOverride && !endOverride) {
+      // Only the start moved: keep the regular duration instead of reading the
+      // unchanged end time as "past midnight".
+      const durationMinutes =
+        (minutesOfTime(base.endTime) - minutesOfTime(base.startTime) + 1440) % 1440
+      end = new Date(start.getTime() + durationMinutes * 60_000)
+    } else {
+      const endTime = endOverride ? exception.endTime! : base.endTime
+      // An end time earlier than the start time means the event runs past
+      // midnight, so it ends on the following local day.
+      const endDate =
+        minutesOfTime(endTime) < minutesOfTime(startTime) ? addLocalDays(date, 1) : date
+      end = zonedTimeToUtc(endDate, endTime)
+    }
 
     const occurrence: Occurrence = {
       eventId: event.id,
@@ -47,6 +54,7 @@ export function expand(
       start: start.toISOString(),
       end: end.toISOString(),
       cancelled: exception.cancelled === true,
+      allDay: !base.hasTime && !startOverride,
     }
     if (exception.note) occurrence.note = exception.note
     return occurrence

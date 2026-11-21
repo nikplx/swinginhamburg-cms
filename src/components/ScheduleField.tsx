@@ -27,6 +27,7 @@ import { datesBetween } from '@/lib/occurrences/schedule'
 import { keysLostByPruning } from '@/lib/occurrences/prune'
 import { addLocalDays, todayLocal, toLocalDateValue } from '@/lib/occurrences/time'
 import {
+  SCHEDULE_LIMITS,
   TIME_ZONE,
   type CourseBlock,
   type DatesBlock,
@@ -610,6 +611,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             />
             <NumberControl
               label={t('Einheiten', 'Sessions')}
+              max={SCHEDULE_LIMITS.sessions}
               path={`${path}.course.sessions`}
               readOnly={readOnly}
               value={block.sessions}
@@ -681,6 +683,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
           />
           <NumberControl
             label={t('Intervall', 'Interval')}
+            max={SCHEDULE_LIMITS.interval}
             path={`${path}.recurring.interval`}
             readOnly={readOnly}
             value={recurring.interval ?? 1}
@@ -774,6 +777,16 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
             )}
           </div>
         )}
+        {recurring.frequency === 'monthly' &&
+          (recurring.monthlyMode ?? 'dayOfMonth') === 'dayOfMonth' &&
+          Number(recurring.dayOfMonth) > 28 && (
+            <Banner type="info">
+              {t(
+                `Monate ohne einen ${recurring.dayOfMonth}. werden übersprungen.`,
+                `Months without day ${recurring.dayOfMonth} are skipped.`,
+              )}
+            </Banner>
+          )}
 
         <div className="schedule-field__row">
           <SelectControl
@@ -798,6 +811,7 @@ export const ScheduleField: React.FC<Props> = ({ path, readOnly }) => {
           {recurring.endMode === 'count' && (
             <NumberControl
               label={t('Anzahl', 'Count')}
+              max={SCHEDULE_LIMITS.count}
               path={`${path}.recurring.count`}
               readOnly={readOnly}
               value={recurring.count ?? 1}

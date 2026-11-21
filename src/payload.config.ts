@@ -34,9 +34,7 @@ export default buildConfig({
   // browsers whose language is not configured.
   i18n: {
     fallbackLanguage: 'de',
-    // payload@3.93 vs @payloadcms/translations@3.79: a few newer keys are typed
-    // as required. The shipped German translations are complete for this app.
-    supportedLanguages: { de: de as any, en: en as any },
+    supportedLanguages: { de, en },
   },
   email: process.env.RESEND_API_KEY ? resendAdapter({
     defaultFromAddress: 'swinginhamburg@eins9und30.de',

@@ -32,7 +32,7 @@ export const Users: CollectionConfig = {
 
         return `
           <h1>Welcome, ${user.email}!</h1>
-          <p>You have been invited to manage your dancing school's bio and class schedule.</p>
+          <p>You have been invited to manage your organization's description and events.</p>
           <p><a href="${setupURL}">Click here to set your password and activate your account</a></p>
         `
       },
@@ -71,7 +71,6 @@ export const Users: CollectionConfig = {
       defaultValue: 'guest',
       label: { de: 'Rolle', en: 'Role' },
       options: [
-        { value: 'system', label: { de: 'System', en: 'System' } },
         { value: 'admin', label: { de: 'Administrator:in', en: 'Admin' } },
         { value: 'writer', label: { de: 'Redakteur:in', en: 'Writer' } },
         { value: 'school', label: { de: 'Schule', en: 'School' } },

@@ -102,8 +102,11 @@ export function localWeekdayIndex(date: string): number {
   return localDateToUtcShape(date).getUTCDay()
 }
 
-export function compareLocalDates(a: string, b: string): number {
-  return a < b ? -1 : a > b ? 1 : 0
+/** Whole days from `a` to `b` (negative when `b` is earlier). */
+export function daysBetween(a: string, b: string): number {
+  return Math.round(
+    (localDateToUtcShape(b).getTime() - localDateToUtcShape(a).getTime()) / 86_400_000,
+  )
 }
 
 function offsetMsAt(instant: Date): number {
@@ -138,13 +141,6 @@ export function zonedTimeToUtc(date: string, time: string): Date {
   let instant = wallClockAsUtc - offsetMsAt(new Date(wallClockAsUtc))
   instant = wallClockAsUtc - offsetMsAt(new Date(instant))
   return new Date(instant)
-}
-
-/** Berlin wall-clock time of an instant, as HH:mm. */
-export function utcToLocalTime(instant: Date): string {
-  const parts = TIME_PARTS.formatToParts(instant)
-  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '00'
-  return `${get('hour')}:${get('minute')}`
 }
 
 export function minutesOfTime(time: string): number {

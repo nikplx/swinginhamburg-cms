@@ -2,11 +2,12 @@
 
 import React from 'react'
 import { FieldLabel, useFormFields } from '@payloadcms/ui'
+import { CLASS_LIKE_TYPES, type EventType } from '@/lib/occurrences/types'
 import { useAdminText } from './useAdminText'
 
 /**
  * The dance-style question changes with the event type:
- * - class/workshop: required, "Which dance is taught?"
+ * - class-like types: required, "Which dance is taught?"
  * - everything else: optional, "Dance focus (optional)"
  *
  * Implemented as a reactive UI field so it follows the type select without a
@@ -14,8 +15,8 @@ import { useAdminText } from './useAdminText'
  * validate function on the server.
  */
 export const DanceStylesLabel: React.FC = () => {
-  const type = useFormFields(([fields]) => fields?.type?.value as string | undefined)
-  const classLike = type === 'class' || type === 'workshop'
+  const type = useFormFields(([fields]) => fields?.type?.value as EventType | undefined)
+  const classLike = Boolean(type && CLASS_LIKE_TYPES.includes(type))
   const t = useAdminText()
 
   return (

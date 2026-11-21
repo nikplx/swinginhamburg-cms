@@ -8,12 +8,17 @@ import {
 } from '@/access'
 import { locationGroup } from '@/fields/location'
 import { simpleRichTextEditor } from '@/fields/editors'
-import { deriveEventFields, enforceEventOrganizerScope, prepareEvent } from '@/hooks/events/prepare'
+import {
+  deriveEventFields,
+  enforceEventOrganizerScope,
+  prepareEvent,
+  restrictEventDelete,
+} from '@/hooks/events/prepare'
 import { invalidateOccurrencesCache } from '@/lib/occurrences/cache'
 import { scheduleProblems } from '@/lib/occurrences/schedule'
 import { validateExceptions } from '@/lib/occurrences/prune'
 import { isTimeString } from '@/lib/occurrences/time'
-import { CLASS_LIKE_TYPES, type EventType } from '@/lib/occurrences/types'
+import { CLASS_LIKE_TYPES, SCHEDULE_LIMITS, type EventType } from '@/lib/occurrences/types'
 
 const timeField = (name: string, labelDe: string, labelEn: string): Field => ({
   name,
@@ -74,6 +79,7 @@ export const Events: CollectionConfig = {
   hooks: {
     beforeValidate: [prepareEvent, enforceEventOrganizerScope],
     beforeChange: [deriveEventFields],
+    beforeDelete: [restrictEventDelete],
     afterChange: [() => invalidateOccurrencesCache()],
     afterDelete: [() => invalidateOccurrencesCache()],
   },
@@ -234,6 +240,7 @@ export const Events: CollectionConfig = {
               name: 'interval',
               type: 'number',
               min: 1,
+              max: SCHEDULE_LIMITS.interval,
               defaultValue: 1,
               label: { de: 'Intervall', en: 'Interval' },
               admin: {
@@ -329,6 +336,7 @@ export const Events: CollectionConfig = {
               name: 'count',
               type: 'number',
               min: 1,
+              max: SCHEDULE_LIMITS.count,
               label: { de: 'Anzahl Termine', en: 'Number of occurrences' },
               admin: { condition: (data) => data?.endMode === 'count' },
             },
@@ -355,6 +363,7 @@ export const Events: CollectionConfig = {
               type: 'number',
               required: true,
               min: 1,
+              max: SCHEDULE_LIMITS.sessions,
               defaultValue: 6,
               label: { de: 'Anzahl Einheiten', en: 'Number of sessions' },
             },
@@ -418,18 +427,6 @@ export const Events: CollectionConfig = {
         description: {
           de: 'Leer bei offenen Serien.',
           en: 'Empty for open-ended series.',
-        },
-      },
-    },
-    {
-      name: 'lastConfirmed',
-      type: 'date',
-      label: { de: 'Zuletzt bestätigt', en: 'Last confirmed' },
-      admin: {
-        date: { pickerAppearance: 'dayOnly' },
-        description: {
-          de: 'Für offene Serien: wann der Veranstalter den Zeitplan zuletzt geprüft hat.',
-          en: 'For open-ended series: when the organizer last checked the schedule.',
         },
       },
     },

@@ -1,13 +1,19 @@
 import { buildRuleset, getBlock } from './schedule'
 import type { ScheduleValue } from './types'
 import type { ExceptionsMap, OccurrenceException } from './types'
-import { isDateString, isTimeString, todayLocal } from './time'
+import { addLocalDays, isDateString, isTimeString, todayLocal } from './time'
 
 const ALLOWED_KEYS = new Set(['cancelled', 'note', 'startTime', 'endTime'])
 
 /**
- * Payload's `json` field performs no structural validation, so both the admin
- * UI and the beforeChange hook use this.
+ * Past exceptions are kept this long so that views starting before today (the
+ * frontend calendar starts on the 1st of the month) still show cancellations.
+ */
+export const EXCEPTION_RETENTION_DAYS = 62
+
+/**
+ * Payload's `json` field performs no structural validation; this is the
+ * `exceptions` field validator.
  */
 export function validateExceptions(value: unknown): true | string {
   if (value === null || value === undefined) return true
@@ -59,8 +65,8 @@ function normalizeException(entry: OccurrenceException): OccurrenceException | n
 }
 
 /**
- * Drop exceptions that are in the past or that the current rule no longer
- * produces.
+ * Drop exceptions older than `EXCEPTION_RETENTION_DAYS` or that the current
+ * rule no longer produces.
  *
  * Each key is checked against the rule itself for exactly its own day. Checking
  * against a preview window would delete valid far-future keys (summer breaks).
@@ -78,9 +84,10 @@ export function pruneExceptions(
 
   const set = buildRuleset(block)
   const result: ExceptionsMap = {}
+  const cutoff = addLocalDays(today, -EXCEPTION_RETENTION_DAYS)
 
   for (const key of Object.keys(exceptions).sort()) {
-    if (!isDateString(key) || key < today) continue
+    if (!isDateString(key) || key < cutoff) continue
 
     const [y, m, d] = key.split('-').map(Number)
     const dayStart = new Date(Date.UTC(y, m - 1, d))
