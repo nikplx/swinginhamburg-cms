@@ -2,6 +2,11 @@
 
 import React, { useState, type KeyboardEvent } from 'react'
 import { Banner, FieldDescription, TextInput, useDocumentForm, useFormFields, useTranslation } from '@payloadcms/ui'
+import {
+  partsFromNominatim,
+  venueNameFromNominatim,
+  type NominatimResult,
+} from '@/lib/location'
 import { useAdminText } from './useAdminText'
 import './LocationPicker.scss'
 
@@ -10,9 +15,10 @@ type Props = {
 }
 
 /**
- * Small geocoder helper rendered inside the location group. It writes to the
- * sibling fields (`address`, `lat`, `lng`) via form state, so it works for both
- * `events.location` and `organizations.defaultLocation`.
+ * Small geocoder helper rendered inside the location group. It writes the
+ * address parts, coordinates and (if empty) the venue name into the sibling
+ * fields via form state, so it works for both `events.location` and
+ * `organizations.defaultLocation`. The one-line `address` is derived on save.
  */
 export const LocationPicker: React.FC<Props> = ({ path }) => {
   const basePath = path.replace(/\.?geocode$/, '')
@@ -23,8 +29,11 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
   const address = useFormFields(
     ([fields]) => (fields?.[`${basePath}.address`]?.value as string) ?? '',
   )
+  const venueName = useFormFields(
+    ([fields]) => (fields?.[`${basePath}.name`]?.value as string) ?? '',
+  )
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<any[]>([])
+  const [results, setResults] = useState<NominatimResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<null | string>(null)
 
@@ -38,7 +47,7 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
     setError(null)
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=10&accept-language=${
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=10&accept-language=${
           i18n?.language === 'en' ? 'en' : 'de'
         }&q=${encodeURIComponent(query)}`,
       )
@@ -56,24 +65,21 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
     }
   }
 
-  const select = (result: any) => {
+  const select = (result: NominatimResult) => {
     setResults([])
     setQuery(result.display_name)
-    dispatchFields({
-      type: 'UPDATE',
-      path: `${basePath}.address`,
-      value: result.display_name,
-    })
-    dispatchFields({
-      type: 'UPDATE',
-      path: `${basePath}.lat`,
-      value: Number(result.lat),
-    })
-    dispatchFields({
-      type: 'UPDATE',
-      path: `${basePath}.lng`,
-      value: Number(result.lon),
-    })
+    const update = (field: string, value: unknown) =>
+      dispatchFields({ type: 'UPDATE', path: `${basePath}.${field}`, value })
+
+    for (const [field, value] of Object.entries(partsFromNominatim(result))) {
+      update(field, value)
+    }
+    update('lat', Number(result.lat))
+    update('lng', Number(result.lon))
+
+    // Suggest the venue name, but never overwrite one the editor entered.
+    const suggestedName = venueNameFromNominatim(result)
+    if (suggestedName && !venueName.trim()) update('name', suggestedName)
   }
 
   return (
@@ -106,7 +112,7 @@ export const LocationPicker: React.FC<Props> = ({ path }) => {
             <button
               type="button"
               className="location-picker__result"
-              key={result.place_id}
+              key={`${result.lat},${result.lon},${result.display_name}`}
               onClick={() => select(result)}
             >
               {result.display_name}

@@ -9,6 +9,7 @@ import {
   type Occurrence,
   type OccurrencesResponse,
   type PublicEventSummary,
+  type PublicLocation,
 } from '@/lib/occurrences/types'
 
 /** The frontend calendar asks for 12 months starting on the 1st of a month. */
@@ -30,6 +31,14 @@ async function resolveRelationId(
     req,
   })
   return result.docs[0]?.id
+}
+
+/** Whitelist: new fields in the location group are not published by accident. */
+function publicLocation(location: any): PublicLocation | null {
+  if (!location) return null
+  const { name, street, houseNumber, postcode, district, city, address, lat, lng, directionsNote } =
+    location
+  return { name, street, houseNumber, postcode, district, city, address, lat, lng, directionsNote }
 }
 
 export const occurrencesEndpoint: Endpoint = {
@@ -164,7 +173,7 @@ export const occurrencesEndpoint: Endpoint = {
               }
             : { id: style },
         ),
-        location: event.location ?? null,
+        location: publicLocation(event.location),
         firstDate: event.firstDate,
         lastDate: event.lastDate,
       }

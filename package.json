@@ -20,7 +20,8 @@
     "db:dump": "docker exec postgresdb pg_dump -U postgres -d postgres --clean --if-exists > db-fixture.sql",
     "db:restore": "docker exec -i postgresdb psql -U postgres -d postgres < db-fixture.sql",
     "dev:clean": "docker-compose down -v && npm run setup",
-    "setup": "docker-compose up -d && sleep 5 && npm run db:restore && npm run payload migrate && npm run dev"
+    "setup": "docker-compose up -d && sleep 5 && npm run db:restore && npm run payload migrate && npm run dev",
+    "backfill:addresses": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file-if-exists=.env scripts/backfill-addresses.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.79.0",

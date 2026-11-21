@@ -5,6 +5,8 @@
  * It must never import from `payload`, `@payloadcms/*` or React.
  */
 
+import type { AddressParts } from '../location'
+
 export const EVENT_TYPES = ['social', 'event', 'class'] as const
 export type EventType = (typeof EVENT_TYPES)[number]
 
@@ -106,6 +108,19 @@ export interface Occurrence {
   note?: string
 }
 
+/**
+ * Event venue. `address` is the one-line form ("Schulterblatt 73, 20357
+ * Hamburg"); older rows may still hold Nominatim's long display name there
+ * and have no parts.
+ */
+export interface PublicLocation extends AddressParts {
+  name?: null | string
+  address?: null | string
+  lat?: null | number
+  lng?: null | number
+  directionsNote?: null | string
+}
+
 /** Event fields the public endpoint exposes, once per event. */
 export interface PublicEventSummary {
   id: number | string
@@ -121,13 +136,7 @@ export interface PublicEventSummary {
     shortName?: string
     slug?: string
   }[]
-  location?: {
-    name?: null | string
-    address?: null | string
-    lat?: null | number
-    lng?: null | number
-    directionsNote?: null | string
-  } | null
+  location?: PublicLocation | null
   firstDate?: null | string
   lastDate?: null | string
 }

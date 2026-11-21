@@ -216,11 +216,16 @@ export interface Organization {
       }[]
     | null;
   defaultLocation?: {
+    name?: string | null;
+    street?: string | null;
+    houseNumber?: string | null;
+    postcode?: string | null;
+    city?: string | null;
+    district?: string | null;
     /**
-     * Set via the address search above.
+     * Composed from the fields above.
      */
     address?: string | null;
-    name?: string | null;
     lat?: number | null;
     lng?: number | null;
     directionsNote?: string | null;
@@ -310,11 +315,16 @@ export interface Event {
   danceStyles?: (number | Dance)[] | null;
   level?: ('all' | 'beginner' | 'intermediate' | 'advanced' | 'open') | null;
   location?: {
+    name?: string | null;
+    street?: string | null;
+    houseNumber?: string | null;
+    postcode?: string | null;
+    city?: string | null;
+    district?: string | null;
     /**
-     * Set via the address search above.
+     * Composed from the fields above.
      */
     address?: string | null;
-    name?: string | null;
     lat?: number | null;
     lng?: number | null;
     directionsNote?: string | null;
@@ -561,8 +571,13 @@ export interface EventsSelect<T extends boolean = true> {
   location?:
     | T
     | {
-        address?: T;
         name?: T;
+        street?: T;
+        houseNumber?: T;
+        postcode?: T;
+        city?: T;
+        district?: T;
+        address?: T;
         lat?: T;
         lng?: T;
         directionsNote?: T;
@@ -657,8 +672,13 @@ export interface OrganizationsSelect<T extends boolean = true> {
   defaultLocation?:
     | T
     | {
-        address?: T;
         name?: T;
+        street?: T;
+        houseNumber?: T;
+        postcode?: T;
+        city?: T;
+        district?: T;
+        address?: T;
         lat?: T;
         lng?: T;
         directionsNote?: T;
